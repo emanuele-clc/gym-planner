@@ -2,7 +2,7 @@
 
 App Angular per la scheda di allenamento a corpo libero: 5 sedute a settimana, 3 livelli (base, intermedio, avanzato), immagini per ogni esercizio, tracking delle serie e timer di recupero.
 
-**Sito:** https://emanuele-clc.github.io/calisthenics-planner/
+**Sito:** https://emanuele-clc.github.io/gym-planner/
 
 ## Funzioni
 
@@ -21,6 +21,8 @@ App Angular per la scheda di allenamento a corpo libero: 5 sedute a settimana, 3
 ## Sviluppo
 
 ```bash
+git clone https://github.com/emanuele-clc/gym-planner.git
+cd gym-planner
 npm install
 npm start
 ```
