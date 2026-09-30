@@ -1,16 +1,23 @@
 # Scheda corpo libero
 
-App Angular per la scheda di allenamento a corpo libero: 5 sedute a settimana, 3 livelli (base, intermedio, avanzato), immagini per ogni esercizio, tracking delle serie e timer di recupero.
+App Angular per un programma di allenamento a corpo libero: 5 sedute a settimana, 3 livelli (base, intermedio, avanzato), immagini per ogni esercizio, registrazione delle serie e timer di recupero. Pensata per il telefono.
 
 **Sito:** https://emanuele-clc.github.io/gym-planner/
 
 ## Funzioni
 
-- Settimana con sedute Push, Pull, Gambe + core, Upper, Gambe + core
+- Settimana: Push, Pull, Gambe + core, Upper, Gambe + core (lunedì, martedì, mercoledì, venerdì, sabato)
 - Cambio livello: variante dell'esercizio, serie, ripetizioni e recupero si aggiornano
-- Immagini animate a due frame per ogni esercizio
+- Immagini a due frame per ogni esercizio
 - Registrazione delle ripetizioni per serie, salvata nel browser (localStorage)
 - Timer di recupero per esercizio
+- Storico delle sedute
+- Guida: serie settimanali per muscolo, progressione, recupero, alimentazione
+
+## Installazione sul telefono
+
+- Android (Chrome): menu ⋮ > Aggiungi a schermata Home
+- iPhone (Safari): Condividi > Aggiungi alla schermata Home
 
 ## Stack
 
@@ -21,8 +28,6 @@ App Angular per la scheda di allenamento a corpo libero: 5 sedute a settimana, 3
 ## Sviluppo
 
 ```bash
-git clone https://github.com/emanuele-clc/gym-planner.git
-cd gym-planner
 npm install
 npm start
 ```

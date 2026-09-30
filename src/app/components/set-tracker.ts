@@ -11,7 +11,7 @@ import { Component, input, linkedSignal, output } from '@angular/core';
             type="number"
             inputmode="numeric"
             min="0"
-            class="w-16 border border-slate-300 bg-white p-2 text-sm text-slate-900"
+            class="h-11 w-16 border border-slate-300 bg-white p-2 text-base text-slate-900"
             [value]="v ?? ''"
             (input)="update($index, $event)"
           />
@@ -19,7 +19,7 @@ import { Component, input, linkedSignal, output } from '@angular/core';
       }
       <button
         type="button"
-        class="bg-indigo-600 px-4 py-2 text-sm text-white hover:bg-indigo-700"
+        class="h-11 bg-indigo-600 px-4 text-sm text-white hover:bg-indigo-700"
         (click)="save()"
       >
         {{ isSaved() ? 'Salvato' : 'Salva' }}

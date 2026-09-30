@@ -10,17 +10,22 @@ export const LEVEL_LABEL: Record<Level, string> = {
 
 export type Equipment = 'nessuno' | 'sbarra' | 'parallele' | 'sedia';
 
-export type MuscleGroup =
-  | 'petto'
-  | 'spalle'
-  | 'tricipiti'
-  | 'dorso'
-  | 'bicipiti'
-  | 'quadricipiti'
-  | 'femorali'
-  | 'glutei'
-  | 'polpacci'
-  | 'core';
+export const MUSCLES = [
+  'petto',
+  'spalle',
+  'tricipiti',
+  'dorso',
+  'bicipiti',
+  'quadricipiti',
+  'femorali',
+  'glutei',
+  'polpacci',
+  'adduttori',
+  'lombari',
+  'core',
+] as const;
+
+export type MuscleGroup = (typeof MUSCLES)[number];
 
 export interface Variant {
   id: string;
