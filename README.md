@@ -34,9 +34,10 @@ npm start
 
 ## Media
 
-Le immagini vengono da [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (Unlicense).
+- Foto: [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (Unlicense)
+- Illustrazioni: Exercise data by [RepDB](https://repdb.co) (repdb.co), licenza free tier con attribuzione
 
-Gli esercizi assenti dal database leggono due frame da `public/assets/exercises/<nome>/0.jpg` e `1.jpg`. Se il file manca, la card mostra il percorso atteso.
+Le immagini sono caricate direttamente dai repository originali. In `public/assets/exercises/` si possono aggiungere file propri; se un'immagine non si carica, la card mostra il percorso atteso.
 
 ## Deploy
 

@@ -4,9 +4,17 @@ const DB_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main
 
 const db = (id: string): string[] => [`${DB_BASE}/${id}/0.jpg`, `${DB_BASE}/${id}/1.jpg`];
 
-const local = (slug: string): string[] => [
-  `assets/exercises/${slug}/0.jpg`,
-  `assets/exercises/${slug}/1.jpg`,
+const REPDB_BASE = 'https://raw.githubusercontent.com/RepDB/exercise-dataset/main/images/flat';
+
+const repdb = (id: string): string[] => [
+  `${REPDB_BASE}/${id}-start.webp`,
+  `${REPDB_BASE}/${id}-peak.webp`,
+];
+
+const repdbMain = (id: string): string[] => [`${REPDB_BASE}/${id}-main.webp`];
+
+const repdbFrame = (id: string, part: 'start' | 'peak'): string[] => [
+  `${REPDB_BASE}/${id}-${part}.webp`,
 ];
 
 const variant = (id: string, name: string, frames: string[], note?: string): Variant => ({
@@ -49,11 +57,11 @@ export const EXERCISES: Exercise[] = [
       'Scendi con la testa verso terra, tra le mani',
     ],
     variants: {
-      base: variant('pike-terra', 'Pike push-up', local('pike-pushup')),
+      base: variant('pike-terra', 'Pike push-up', repdb('pike-push-ups')),
       intermedio: variant(
         'pike-rialzato',
         'Pike push-up piedi rialzati',
-        local('pike-pushup-rialzato'),
+        repdb('pike-push-ups'),
         'Piedi su una sedia o un gradino.',
       ),
       avanzato: variant(
@@ -95,7 +103,8 @@ export const EXERCISES: Exercise[] = [
       avanzato: variant(
         'diamond-rialzato',
         'Diamond push-up piedi rialzati',
-        local('diamond-rialzato'),
+        repdb('diamond-push-ups'),
+        'Piedi su una sedia.',
       ),
     },
   },
@@ -129,7 +138,7 @@ export const EXERCISES: Exercise[] = [
       base: variant(
         'pullup-negativa',
         'Trazioni negative',
-        local('trazione-negativa'),
+        repdb('negative-pull-ups'),
         'Sali con un salto, scendi in 4-5".',
       ),
       intermedio: variant('pullup-prona', 'Trazioni presa prona', db('Pullups')),
@@ -148,7 +157,7 @@ export const EXERCISES: Exercise[] = [
     equipment: ['sbarra'],
     cues: ['Presa supina, larghezza spalle', 'Gomiti verso le anche', 'Mento sopra la sbarra'],
     variants: {
-      base: variant('chinup-negativo', 'Chin-up negativi', local('chinup-negativo'), 'Sali con un salto, scendi in 4-5".'),
+      base: variant('chinup-negativo', 'Chin-up negativi', repdb('negative-pull-ups'), 'Presa supina. Sali con un salto, scendi in 4-5".'),
       intermedio: variant('chinup-std', 'Chin-up', db('Chin-Up')),
       avanzato: variant('chinup-zavorrato', 'Chin-up zavorrati', db('Chin-Up'), 'Zaino con peso.'),
     },
@@ -166,7 +175,7 @@ export const EXERCISES: Exercise[] = [
     variants: {
       base: variant('row-inclinata', 'Australian row, corpo più in piedi', db('Inverted_Row'), 'Più il corpo è verticale, più è facile.'),
       intermedio: variant('row-std', 'Australian row', db('Inverted_Row')),
-      avanzato: variant('row-piedi-rialzati', 'Australian row piedi rialzati', local('row-piedi-rialzati'), 'Piedi su una sedia.'),
+      avanzato: variant('row-piedi-rialzati', 'Australian row piedi rialzati', repdb('inverted-row'), 'Piedi su una sedia.'),
     },
   },
   {
@@ -196,8 +205,8 @@ export const EXERCISES: Exercise[] = [
       'Respira regolarmente',
     ],
     variants: {
-      base: variant('hang-base', 'Dead hang', local('dead-hang')),
-      intermedio: variant('hang-int', 'Dead hang', local('dead-hang')),
+      base: variant('hang-base', 'Dead hang', repdbMain('dead-hang')),
+      intermedio: variant('hang-int', 'Dead hang', repdbMain('dead-hang')),
       avanzato: variant('hang-una-mano', 'Dead hang a una mano', db('One_Handed_Hang')),
     },
   },
@@ -213,8 +222,8 @@ export const EXERCISES: Exercise[] = [
     ],
     variants: {
       base: variant('split-squat', 'Split squat', db('Split_Squats')),
-      intermedio: variant('bulgaro', 'Squat bulgaro', local('squat-bulgaro')),
-      avanzato: variant('bulgaro-lento', 'Squat bulgaro, discesa 3"', local('squat-bulgaro')),
+      intermedio: variant('bulgaro', 'Squat bulgaro', repdb('bulgarian-split-squat'), 'Nell’immagine ci sono i manubri: tu fallo a corpo libero.'),
+      avanzato: variant('bulgaro-lento', 'Squat bulgaro, discesa 3"', repdb('bulgarian-split-squat'), 'Nell’immagine ci sono i manubri: tu usa un zaino o il corpo libero.'),
     },
   },
   {
@@ -252,9 +261,9 @@ export const EXERCISES: Exercise[] = [
     equipment: ['nessuno'],
     cues: ['Avampiede su un gradino', 'Sali il più in alto possibile', 'Scendi lentamente sotto il gradino'],
     variants: {
-      base: variant('calf-base', 'Calf raise a terra', local('calf-raise')),
-      intermedio: variant('calf-gradino', 'Calf raise su gradino', local('calf-raise')),
-      avanzato: variant('calf-mono', 'Calf raise monogamba su gradino', local('calf-raise')),
+      base: variant('calf-base', 'Calf raise a terra', repdb('bodyweight-calf-raise')),
+      intermedio: variant('calf-gradino', 'Calf raise su gradino', repdb('bodyweight-calf-raise'), 'Avampiede su un gradino.'),
+      avanzato: variant('calf-mono', 'Calf raise monogamba su gradino', repdb('single-leg-calf-raise'), 'Avampiede su un gradino.'),
     },
   },
   {
@@ -309,8 +318,8 @@ export const EXERCISES: Exercise[] = [
     cues: ['Gamba libera tesa in avanti', 'Busto in avanti come contrappeso', 'Scendi controllato, tallone a terra'],
     variants: {
       base: variant('sit-squat', 'Squat a sedia', db('Sit_Squats'), 'Siediti e rialzati su una gamba sola con appoggio.'),
-      intermedio: variant('pistol-assistito', 'Pistol squat assistito', local('pistol-squat'), 'Appoggio a una parete o a un montante.'),
-      avanzato: variant('pistol', 'Pistol squat', local('pistol-squat')),
+      intermedio: variant('pistol-assistito', 'Pistol squat assistito', repdb('pistol-squat'), 'Appoggio a una parete o a un montante.'),
+      avanzato: variant('pistol', 'Pistol squat', repdb('pistol-squat')),
     },
   },
   {
@@ -324,7 +333,7 @@ export const EXERCISES: Exercise[] = [
       'Scendi il più lentamente possibile',
     ],
     variants: {
-      base: variant('hamstring-walkout', 'Hamstring walkout', local('hamstring-walkout')),
+      base: variant('nordic-molto-assistito', 'Nordic curl molto assistito', repdb('nordic-hamstring-curl'), 'Aiutati con le mani per tutta la salita.'),
       intermedio: variant('nordic-assistito', 'Nordic curl assistito', db('Natural_Glute_Ham_Raise'), 'Aiutati con le mani per risalire.'),
       avanzato: variant('nordic', 'Nordic curl', db('Natural_Glute_Ham_Raise')),
     },
@@ -360,9 +369,9 @@ export const EXERCISES: Exercise[] = [
     equipment: ['parallele'],
     cues: ['Spalle spinte verso il basso', 'Braccia bloccate', 'Gambe unite, punte estese'],
     variants: {
-      base: variant('support-hold', 'Support hold', local('support-hold')),
-      intermedio: variant('l-sit-tuck', 'L-sit a ginocchia raccolte', local('l-sit-tuck')),
-      avanzato: variant('l-sit-full', 'L-sit', local('l-sit')),
+      base: variant('support-hold', 'Support hold', repdbMain('l-sit'), 'Nell’immagine le gambe sono sollevate: per il support hold tienile a terra.'),
+      intermedio: variant('l-sit-tuck', 'L-sit a ginocchia raccolte', db('Knee_Hip_Raise_On_Parallel_Bars'), 'Tieni le ginocchia raccolte in alto.'),
+      avanzato: variant('l-sit-full', 'L-sit', repdbMain('l-sit')),
     },
   },
   {
@@ -376,9 +385,9 @@ export const EXERCISES: Exercise[] = [
       'Se la lombare si stacca, alza le gambe',
     ],
     variants: {
-      base: variant('hollow-tuck', 'Hollow hold a ginocchia piegate', local('hollow-hold')),
-      intermedio: variant('hollow-std', 'Hollow hold', local('hollow-hold')),
-      avanzato: variant('hollow-arms', 'Hollow hold, braccia in alto', local('hollow-hold')),
+      base: variant('hollow-tuck', 'Hollow hold a ginocchia piegate', repdbMain('hollow-body-hold')),
+      intermedio: variant('hollow-std', 'Hollow hold', repdbMain('hollow-body-hold')),
+      avanzato: variant('hollow-arms', 'Hollow hold, braccia in alto', repdbMain('hollow-body-hold')),
     },
   },
   {
@@ -408,7 +417,7 @@ export const EXERCISES: Exercise[] = [
       'Corpo rigido, bacino fermo',
     ],
     variants: {
-      base: variant('body-up-ginocchia', 'Body-up sulle ginocchia', local('body-up-ginocchia')),
+      base: variant('body-up-ginocchia', 'Body-up sulle ginocchia', db('Body-Up'), 'Appoggia le ginocchia a terra.'),
       intermedio: variant('body-up-std', 'Body-up', db('Body-Up')),
       avanzato: variant('body-up-pausa', 'Body-up con pausa 2"', db('Body-Up'), 'Pausa 2" a gomiti stesi.'),
     },
@@ -420,7 +429,7 @@ export const EXERCISES: Exercise[] = [
     equipment: ['sbarra'],
     cues: ['Presa neutra, petto in fuori', 'Porta il petto verso la sbarra', 'Scendi controllato, braccia tese'],
     variants: {
-      base: variant('trazioni-elastico', 'Trazioni con elastico', local('trazione-elastico'), 'Elastico attorno alla sbarra e sotto il piede.'),
+      base: variant('trazioni-elastico', 'Trazioni con elastico', repdb('band-assisted-pull-ups'), 'Elastico attorno alla sbarra e sotto il piede.'),
       intermedio: variant('vbar', 'Trazioni presa neutra', db('V-Bar_Pullup'), 'Servono maniglie a V. Senza, usa la presa prona.'),
       avanzato: variant('vbar-pausa', 'Trazioni presa neutra con pausa 2"', db('V-Bar_Pullup'), 'Pausa 2" con il mento sopra la sbarra.'),
     },
@@ -570,7 +579,7 @@ export const EXERCISES: Exercise[] = [
     cues: ['Mani larghe, corpo in linea', 'Scendi su un lato, l’altro braccio resta teso', 'Alterna i lati a ogni ripetizione'],
     variants: {
       base: variant('archer-base', 'Push-up larghi', db('Push-Up_Wide')),
-      intermedio: variant('archer-int', 'Archer push-up', local('archer-pushup')),
+      intermedio: variant('archer-int', 'Archer push-up', repdb('archer-push-ups')),
       avanzato: variant('archer-avv', 'Push-up a un braccio', db('Single-Arm_Push-Up')),
     },
   },
@@ -581,9 +590,9 @@ export const EXERCISES: Exercise[] = [
     equipment: ['nessuno'],
     cues: ['Mani a circa 15 cm dal muro', 'Spingi il pavimento, spalle alte', 'Corpo in linea, addome contratto'],
     variants: {
-      base: variant('wall-plank', 'Plank in verticale contro il muro', local('wall-plank')),
-      intermedio: variant('handstand-pancia', 'Handstand hold, pancia al muro', local('handstand-hold')),
-      avanzato: variant('handstand-schiena', 'Handstand hold, schiena al muro', local('handstand-hold-schiena')),
+      base: variant('wall-plank', 'Pike hold, piedi a terra', repdbFrame('pike-push-ups', 'peak')),
+      intermedio: variant('handstand-pancia', 'Handstand hold, pancia al muro', repdbFrame('handstand-push-ups', 'start'), 'Nell’immagine le mani sono su parallette: tu fallo contro il muro.'),
+      avanzato: variant('handstand-schiena', 'Handstand hold, schiena al muro', repdbFrame('handstand-push-ups', 'start'), 'Schiena rivolta al muro. Nell’immagine le mani sono su parallette.'),
     },
   },
   {
@@ -595,7 +604,7 @@ export const EXERCISES: Exercise[] = [
     variants: {
       base: variant('row-sup-base', 'Row presa supina, corpo più in piedi', db('Inverted_Row'), 'Presa supina: i frame mostrano la presa prona.'),
       intermedio: variant('row-sup-int', 'Australian row presa supina', db('Inverted_Row'), 'Presa supina: i frame mostrano la presa prona.'),
-      avanzato: variant('row-sup-avv', 'Row presa supina, piedi rialzati', local('row-piedi-rialzati'), 'Piedi su una sedia, presa supina.'),
+      avanzato: variant('row-sup-avv', 'Row presa supina, piedi rialzati', repdb('inverted-row'), 'Piedi su una sedia, presa supina.'),
     },
   },
   {
@@ -607,7 +616,7 @@ export const EXERCISES: Exercise[] = [
     variants: {
       base: variant('side-chin-base', 'Chin-up', db('Chin-Up')),
       intermedio: variant('side-chin-int', 'Trazioni laterali', db('Side_To_Side_Chins')),
-      avanzato: variant('archer-pullup', 'Archer pull-up', local('archer-pullup')),
+      avanzato: variant('archer-pullup', 'Archer pull-up', repdb('archer-pull-ups')),
     },
   },
   {

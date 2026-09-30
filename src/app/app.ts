@@ -51,7 +51,10 @@ interface NavItem {
 
       <footer class="border-t border-line bg-surface">
         <div class="mx-auto flex max-w-6xl flex-wrap justify-between gap-4 p-4 text-xs text-muted">
-          <span>Immagini: free-exercise-db (Unlicense)</span>
+          <span>
+            Immagini: free-exercise-db (Unlicense) ·
+            <a href="https://repdb.co" class="hover:text-accent">Exercise data by RepDB (repdb.co)</a>
+          </span>
           <a href="https://github.com/emanuele-clc/gym-planner" class="hover:text-accent">
             Codice su GitHub
           </a>
