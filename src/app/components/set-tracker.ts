@@ -5,13 +5,13 @@ import { Component, input, linkedSignal, output } from '@angular/core';
   template: `
     <div class="flex flex-wrap items-end gap-2">
       @for (v of values(); track $index) {
-        <label class="flex flex-col gap-1 text-xs text-slate-500">
+        <label class="flex flex-col gap-1 text-xs text-muted">
           S{{ $index + 1 }}
           <input
             type="number"
             inputmode="numeric"
             min="0"
-            class="h-11 w-16 border border-slate-300 bg-white p-2 text-base text-slate-900"
+            class="h-11 w-16 border border-line-strong bg-surface p-2 text-base text-ink"
             [value]="v ?? ''"
             (input)="update($index, $event)"
           />

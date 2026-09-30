@@ -5,7 +5,7 @@ import { Component, effect, input, linkedSignal } from '@angular/core';
   template: `
     @if (!failed()) {
       <img
-        class="aspect-4/3 w-full bg-slate-100 object-contain"
+        class="aspect-4/3 w-full bg-subtle object-contain"
         loading="lazy"
         [src]="frames()[index()]"
         [alt]="alt()"
@@ -13,7 +13,7 @@ import { Component, effect, input, linkedSignal } from '@angular/core';
       />
     } @else {
       <div
-        class="flex aspect-4/3 w-full items-center justify-center border-b border-dashed border-slate-300 bg-slate-100 p-4 text-center text-xs text-slate-500"
+        class="flex aspect-4/3 w-full items-center justify-center border-b border-dashed border-line-strong bg-subtle p-4 text-center text-xs text-muted"
       >
         [Media mancante: public/{{ frames()[0] }}]
       </div>

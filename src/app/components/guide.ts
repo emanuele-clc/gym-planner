@@ -48,22 +48,22 @@ const SECTIONS: GuideSection[] = [
   selector: 'app-guide',
   imports: [ProgressBar],
   template: `
-    <h1 class="text-2xl font-semibold tracking-tight">Guida</h1>
+    <h1 class="text-3xl font-bold tracking-tight">Guida</h1>
 
-    <section class="mt-6 border border-slate-200 bg-white">
+    <section class="mt-6 rounded border border-line bg-surface">
       <div class="p-4">
         <h2 class="text-sm font-semibold">Serie dirette a settimana per muscolo</h2>
-        <p class="mt-1 text-xs text-slate-500">
+        <p class="mt-1 text-xs text-muted">
           Livello {{ levelLabel() }}. Conteggio per muscolo principale dell’esercizio.
           Riferimento per crescere: 10-20 serie a settimana.
         </p>
       </div>
       <ul>
         @for (row of volume(); track row.muscle) {
-          <li class="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-4 border-t border-slate-200 p-4 text-sm">
+          <li class="grid grid-cols-[5.5rem_1fr_4.5rem] items-center gap-4 border-t border-line p-4 text-sm">
             <span class="capitalize">{{ row.muscle }}</span>
             <app-progress-bar [value]="row.sets" [max]="20" />
-            <span class="text-right tabular-nums text-slate-600">
+            <span class="text-right tabular-nums text-muted">
               {{ row.sets }} · {{ row.days }} gg
             </span>
           </li>
@@ -73,9 +73,9 @@ const SECTIONS: GuideSection[] = [
 
     <div class="mt-6 grid gap-6 md:grid-cols-2">
       @for (section of sections; track section.title) {
-        <section class="border border-slate-200 bg-white p-4">
+        <section class="rounded border border-line bg-surface p-4">
           <h2 class="text-sm font-semibold">{{ section.title }}</h2>
-          <ul class="mt-4 list-disc pl-4 text-sm text-slate-700">
+          <ul class="mt-4 list-disc pl-4 text-sm text-body">
             @for (item of section.items; track item) {
               <li class="mb-2">{{ item }}</li>
             }

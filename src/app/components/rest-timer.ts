@@ -4,11 +4,11 @@ import { Component, DestroyRef, computed, inject, input, linkedSignal, signal } 
   selector: 'app-rest-timer',
   template: `
     <div class="flex items-center gap-4 text-sm">
-      <span class="text-slate-500">Riposo</span>
+      <span class="text-muted">Riposo</span>
       <span class="w-12 font-medium tabular-nums">{{ label() }}</span>
       <button
         type="button"
-        class="h-11 border border-slate-300 bg-white px-4 text-slate-700 hover:bg-slate-100"
+        class="h-11 border border-line-strong bg-surface px-4 text-body hover:bg-subtle"
         (click)="toggle()"
       >
         {{ running() ? 'Stop' : 'Avvia' }}

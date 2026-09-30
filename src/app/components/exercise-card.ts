@@ -8,63 +8,65 @@ import { SetTracker } from './set-tracker';
   selector: 'app-exercise-card',
   imports: [ExerciseMedia, SetTracker, RestTimer],
   template: `
-    <article class="flex h-full flex-col border border-slate-200 bg-white">
-      <app-exercise-media [frames]="item().variant.frames" [alt]="item().variant.name" />
+    <article class="flex h-full flex-col overflow-hidden rounded border border-line bg-surface">
+      <div class="relative">
+        <app-exercise-media [frames]="item().variant.frames" [alt]="item().variant.name" />
+        <span class="absolute left-0 top-0 bg-indigo-600 px-4 py-2 text-sm font-bold text-white">
+          {{ index() }}
+        </span>
+        @if (doneToday()) {
+          <span class="absolute right-0 top-0 bg-surface px-3 py-2 text-xs font-bold text-accent">
+            Fatto oggi
+          </span>
+        }
+      </div>
+
       <div class="flex flex-1 flex-col gap-4 p-4">
-        <header class="flex items-start justify-between gap-4">
-          <div>
-            <p class="text-xs text-slate-500">{{ index() }}. {{ item().exercise.name }}</p>
-            <h2 class="text-base font-semibold tracking-tight">{{ item().variant.name }}</h2>
-          </div>
-          @if (doneToday()) {
-            <span class="border border-indigo-600 px-2 py-1 text-xs text-indigo-600">Fatto oggi</span>
-          }
+        <header>
+          <p class="text-xs uppercase tracking-wide text-muted">{{ item().exercise.name }}</p>
+          <h2 class="mt-1 text-xl font-bold tracking-tight">{{ item().variant.name }}</h2>
         </header>
 
         <ul class="flex flex-wrap gap-2">
           @for (tag of tags(); track tag) {
-            <li class="border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
-              {{ tag }}
-            </li>
+            <li class="rounded bg-subtle px-2 py-1 text-xs text-muted">{{ tag }}</li>
           }
         </ul>
 
-        <dl class="grid grid-cols-3 gap-4 border-y border-slate-200 py-4 text-sm">
+        <dl class="grid grid-cols-3 gap-4 border-y border-line py-4">
           <div>
-            <dt class="text-xs text-slate-500">Serie</dt>
-            <dd class="text-lg font-semibold">{{ item().prescription.sets }}</dd>
+            <dt class="text-xs uppercase tracking-wide text-muted">Serie</dt>
+            <dd class="mt-1 text-2xl font-bold">{{ item().prescription.sets }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-500">
-              {{ item().prescription.target.kind === 'reps' ? 'Ripetizioni' : 'Secondi' }}
+            <dt class="text-xs uppercase tracking-wide text-muted">
+              {{ item().prescription.target.kind === 'reps' ? 'Rip.' : 'Secondi' }}
             </dt>
-            <dd class="text-lg font-semibold">
+            <dd class="mt-1 text-2xl font-bold">
               {{ item().prescription.target.min }}–{{ item().prescription.target.max }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs text-slate-500">Recupero</dt>
-            <dd class="text-lg font-semibold">{{ item().prescription.restSeconds }}"</dd>
+            <dt class="text-xs uppercase tracking-wide text-muted">Recupero</dt>
+            <dd class="mt-1 text-2xl font-bold">{{ item().prescription.restSeconds }}"</dd>
           </div>
         </dl>
 
-        <ul class="list-disc pl-4 text-sm text-slate-700">
+        <ul class="list-disc pl-4 text-sm text-body">
           @for (cue of item().exercise.cues; track cue) {
-            <li>{{ cue }}</li>
+            <li class="mb-1">{{ cue }}</li>
           }
         </ul>
 
         @if (item().variant.note) {
-          <p class="border-l-2 border-slate-300 pl-4 text-sm text-slate-500">
-            {{ item().variant.note }}
-          </p>
+          <p class="border-l-2 border-accent pl-4 text-sm text-muted">{{ item().variant.note }}</p>
         }
 
-        <div class="mt-auto flex flex-col gap-4 border-t border-slate-200 pt-4">
+        <div class="mt-auto flex flex-col gap-4 border-t border-line pt-4">
           <app-set-tracker [sets]="item().prescription.sets" (saved)="onSaved($event)" />
           <app-rest-timer [seconds]="item().prescription.restSeconds" />
           @if (last(); as l) {
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-muted">
               Ultimo salvataggio ({{ l.date }}): {{ l.setsCompleted.join(', ') }}
             </p>
           }

@@ -5,7 +5,7 @@ import { ProgramService } from '../services/program.service';
 @Component({
   selector: 'app-level-switch',
   template: `
-    <div class="flex w-full border border-slate-300 sm:inline-flex sm:w-auto" role="radiogroup" aria-label="Livello">
+    <div class="flex w-full border border-line-strong sm:inline-flex sm:w-auto" role="radiogroup" aria-label="Livello">
       @for (l of levels; track l) {
         <button
           type="button"
@@ -26,5 +26,5 @@ export class LevelSwitch {
   protected readonly levels = LEVELS;
   protected readonly labels = LEVEL_LABEL;
   protected readonly active = 'bg-indigo-600 text-white';
-  protected readonly inactive = 'bg-white text-slate-700 hover:bg-slate-100';
+  protected readonly inactive = 'bg-surface text-body hover:bg-subtle';
 }
