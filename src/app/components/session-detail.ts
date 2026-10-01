@@ -3,12 +3,13 @@ import { RouterLink } from '@angular/router';
 import { LEVEL_LABEL } from '../models/exercise.model';
 import { WEEKDAY_LABEL } from '../models/program.model';
 import { ProgramService } from '../services/program.service';
+import { BarSwitch } from './bar-switch';
 import { ExerciseCard } from './exercise-card';
 import { ProgressBar } from './progress-bar';
 
 @Component({
   selector: 'app-session-detail',
-  imports: [RouterLink, ExerciseCard, ProgressBar],
+  imports: [RouterLink, ExerciseCard, ProgressBar, BarSwitch],
   template: `
     <a routerLink="/" class="text-sm text-accent hover:underline">Settimana</a>
 
@@ -94,6 +95,17 @@ import { ProgressBar } from './progress-bar';
           </aside>
 
           <div class="flex flex-col gap-6">
+            @if (hasBarItems()) {
+              <section class="rounded border border-line bg-surface p-4">
+                <h2 class="text-sm font-bold">Esercizi alla sbarra</h2>
+                <p class="mt-1 text-sm text-muted">
+                  Ogni esercizio alla sbarra ha un’alternativa senza sbarra. Cambia tutta la seduta qui,
+                  oppure un esercizio alla volta dal pulsante nella card.
+                </p>
+                <app-bar-switch class="mt-4 block" />
+              </section>
+            }
+
             <details class="rounded border border-line bg-surface p-4" open>
               <summary class="cursor-pointer text-sm font-bold">Riscaldamento · 8 min</summary>
               <ul class="mt-4 list-disc pl-4 text-sm text-body">
@@ -127,6 +139,7 @@ export class SessionDetail {
   protected readonly session = computed(() => this.service.session(this.id()));
   protected readonly items = computed(() => this.service.items(this.id()));
   protected readonly stats = computed(() => this.service.stats(this.id()));
+  protected readonly hasBarItems = computed(() => this.items().some((i) => i.swapLabel !== undefined));
   protected readonly progress = computed(() => this.service.progress(this.id()));
   protected readonly levelLabel = computed(() => LEVEL_LABEL[this.service.level()]);
   protected readonly dayLabel = computed(() => {

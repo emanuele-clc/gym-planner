@@ -20,6 +20,8 @@ export interface ResolvedItem {
   level: Level;
   isAlternative: boolean;
   replaces?: string;
+  originalId: string;
+  swapLabel?: string;
 }
 
 export interface SessionStats {
@@ -59,6 +61,7 @@ const LEVEL_KEY = 'cp.level';
 const LOGS_KEY = 'cp.logs';
 const BAR_KEY = 'cp.bar';
 const OVERRIDES_KEY = 'cp.overrides';
+const SWAPS_KEY = 'cp.swaps';
 
 const isLevel = (value: unknown): value is Level =>
   typeof value === 'string' && (LEVELS as readonly string[]).includes(value);
@@ -110,6 +113,22 @@ const readOverrides = (): Record<string, Level> => {
   }
 };
 
+const readSwaps = (): Record<string, boolean> => {
+  const raw = localStorage.getItem(SWAPS_KEY);
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return {};
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(
+        (entry): entry is [string, boolean] => typeof entry[1] === 'boolean',
+      ),
+    );
+  } catch {
+    return {};
+  }
+};
+
 @Injectable({ providedIn: 'root' })
 export class ProgramService {
   private readonly exercisesById = new Map(EXERCISES.map((e) => [e.id, e]));
@@ -118,12 +137,14 @@ export class ProgramService {
   readonly level = signal<Level>(readLevel());
   readonly barMode = signal<BarMode>(readBarMode());
   readonly overrides = signal<Record<string, Level>>(readOverrides());
+  readonly swaps = signal<Record<string, boolean>>(readSwaps());
   readonly logs = signal<ExerciseLog[]>(readLogs());
 
   constructor() {
     effect(() => localStorage.setItem(LEVEL_KEY, this.level()));
     effect(() => localStorage.setItem(BAR_KEY, this.barMode()));
     effect(() => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(this.overrides())));
+    effect(() => localStorage.setItem(SWAPS_KEY, JSON.stringify(this.swaps())));
     effect(() => localStorage.setItem(LOGS_KEY, JSON.stringify(this.logs())));
   }
 
@@ -146,6 +167,11 @@ export class ProgramService {
 
   setBarMode(mode: BarMode): void {
     this.barMode.set(mode);
+    this.swaps.set({});
+  }
+
+  toggleAlternative(originalId: string, currentlyAlternative: boolean): void {
+    this.swaps.update((prev) => ({ ...prev, [originalId]: !currentlyAlternative }));
   }
 
   overrideFor(exerciseId: string): Level | null {
@@ -261,14 +287,17 @@ export class ProgramService {
 
   private resolve(session: Session): ResolvedItem[] {
     const noBar = this.barMode() === 'senza';
+    const swaps = this.swaps();
     const overrides = this.overrides();
     const globalLevel = this.level();
     return session.items.flatMap((item) => {
       const original = this.exercisesById.get(item.exerciseId);
       if (!original) return [];
-      const alt = noBar && original.equipment.includes('sbarra') ? item.alternative : undefined;
+      const swappable = original.equipment.includes('sbarra') ? item.alternative : undefined;
+      const alt = swappable && (swaps[original.id] ?? noBar) ? swappable : undefined;
       const exercise = alt ? this.exercisesById.get(alt.exerciseId) : original;
       if (!exercise) return [];
+      const altExercise = swappable ? this.exercisesById.get(swappable.exerciseId) : undefined;
       const prescriptions = alt ? alt.prescription : item.prescription;
       const level = overrides[exercise.id] ?? globalLevel;
       return [
@@ -279,6 +308,12 @@ export class ProgramService {
           level,
           isAlternative: alt !== undefined,
           replaces: alt ? original.name : undefined,
+          originalId: original.id,
+          swapLabel: alt
+            ? `Torna a ${original.name}`
+            : altExercise
+              ? `Senza sbarra: ${altExercise.name}`
+              : undefined,
         },
       ];
     });

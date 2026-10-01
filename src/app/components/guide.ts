@@ -28,7 +28,7 @@ const SECTIONS: GuideSection[] = [
   {
     title: 'Senza sbarra e trazioni',
     items: [
-      'Con "Senza sbarra" in alto ogni esercizio alla sbarra viene sostituito da un’alternativa: row sotto tavolo, row e curl con zaino, pullover, alzate posteriori.',
+      'Con "Senza sbarra" ogni esercizio alla sbarra viene sostituito da un’alternativa: row sotto tavolo, row e curl con zaino, pullover, alzate posteriori. Vale per tutta la seduta o, dal pulsante nella card, per un esercizio alla volta.',
       'Il livello si può cambiare per ogni singolo esercizio dalla card: tieni le trazioni su Base e il resto su Intermedio.',
       'Per arrivare alle trazioni: trazioni con elastico, trazioni negative (discesa in 4-5"), scapular pull-up e row sotto tavolo.',
       'Il tavolo per i row deve essere robusto: provalo con il peso prima di iniziare.',

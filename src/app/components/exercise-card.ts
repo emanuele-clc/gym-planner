@@ -39,6 +39,16 @@ import { SetTracker } from './set-tracker';
           }
         </ul>
 
+        @if (item().swapLabel; as label) {
+          <button
+            type="button"
+            class="min-h-11 rounded border border-line-strong px-4 py-2 text-left text-sm font-medium text-body hover:bg-subtle"
+            (click)="toggleAlternative()"
+          >
+            {{ label }}
+          </button>
+        }
+
         <div class="flex items-center gap-3">
           <span class="text-xs uppercase tracking-wide text-muted">Livello</span>
           <div class="flex flex-1 overflow-hidden rounded border border-line-strong" role="radiogroup" aria-label="Livello esercizio">
@@ -128,6 +138,10 @@ export class ExerciseCard {
 
   protected isActive(value: Level | null): boolean {
     return this.service.overrideFor(this.item().exercise.id) === value;
+  }
+
+  protected toggleAlternative(): void {
+    this.service.toggleAlternative(this.item().originalId, this.item().isAlternative);
   }
 
   protected setOverride(value: Level | null): void {
