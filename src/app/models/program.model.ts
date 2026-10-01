@@ -24,9 +24,15 @@ export interface Prescription {
   restSeconds: number;
 }
 
+export interface Alternative {
+  exerciseId: string;
+  prescription: Record<Level, Prescription>;
+}
+
 export interface SessionItem {
   exerciseId: string;
   prescription: Record<Level, Prescription>;
+  alternative?: Alternative;
 }
 
 export interface Session {

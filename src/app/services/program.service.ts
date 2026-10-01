@@ -2,12 +2,24 @@ import { Injectable, effect, signal } from '@angular/core';
 import { EXERCISES } from '../data/exercises.data';
 import { PROGRAM } from '../data/program.data';
 import { Equipment, Exercise, LEVELS, Level, MUSCLES, MuscleGroup, Variant } from '../models/exercise.model';
-import { ExerciseLog, Prescription, Program, Session, WEEKDAYS, Weekday } from '../models/program.model';
+import {
+  ExerciseLog,
+  Prescription,
+  Program,
+  Session,
+  WEEKDAYS,
+  Weekday,
+} from '../models/program.model';
+
+export type BarMode = 'con' | 'senza';
 
 export interface ResolvedItem {
   exercise: Exercise;
   variant: Variant;
   prescription: Prescription;
+  level: Level;
+  isAlternative: boolean;
+  replaces?: string;
 }
 
 export interface SessionStats {
@@ -45,6 +57,8 @@ const weekStartIso = (): string => {
 
 const LEVEL_KEY = 'cp.level';
 const LOGS_KEY = 'cp.logs';
+const BAR_KEY = 'cp.bar';
+const OVERRIDES_KEY = 'cp.overrides';
 
 const isLevel = (value: unknown): value is Level =>
   typeof value === 'string' && (LEVELS as readonly string[]).includes(value);
@@ -67,6 +81,8 @@ const readLevel = (): Level => {
   return isLevel(raw) ? raw : 'intermedio';
 };
 
+const readBarMode = (): BarMode => (localStorage.getItem(BAR_KEY) === 'senza' ? 'senza' : 'con');
+
 const readLogs = (): ExerciseLog[] => {
   const raw = localStorage.getItem(LOGS_KEY);
   if (!raw) return [];
@@ -78,16 +94,36 @@ const readLogs = (): ExerciseLog[] => {
   }
 };
 
+const readOverrides = (): Record<string, Level> => {
+  const raw = localStorage.getItem(OVERRIDES_KEY);
+  if (!raw) return {};
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) return {};
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(
+        (entry): entry is [string, Level] => isLevel(entry[1]),
+      ),
+    );
+  } catch {
+    return {};
+  }
+};
+
 @Injectable({ providedIn: 'root' })
 export class ProgramService {
   private readonly exercisesById = new Map(EXERCISES.map((e) => [e.id, e]));
 
   readonly program: Program = PROGRAM;
   readonly level = signal<Level>(readLevel());
+  readonly barMode = signal<BarMode>(readBarMode());
+  readonly overrides = signal<Record<string, Level>>(readOverrides());
   readonly logs = signal<ExerciseLog[]>(readLogs());
 
   constructor() {
     effect(() => localStorage.setItem(LEVEL_KEY, this.level()));
+    effect(() => localStorage.setItem(BAR_KEY, this.barMode()));
+    effect(() => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(this.overrides())));
     effect(() => localStorage.setItem(LOGS_KEY, JSON.stringify(this.logs())));
   }
 
@@ -95,21 +131,34 @@ export class ProgramService {
     return this.program.sessions.find((s) => s.id === id);
   }
 
+  exercise(id: string): Exercise | undefined {
+    return this.exercisesById.get(id);
+  }
+
   items(sessionId: string): ResolvedItem[] {
     const session = this.session(sessionId);
-    if (!session) return [];
-    const level = this.level();
-    return session.items.flatMap((item) => {
-      const exercise = this.exercisesById.get(item.exerciseId);
-      if (!exercise) return [];
-      return [
-        { exercise, variant: exercise.variants[level], prescription: item.prescription[level] },
-      ];
-    });
+    return session ? this.resolve(session) : [];
   }
 
   setLevel(level: Level): void {
     this.level.set(level);
+  }
+
+  setBarMode(mode: BarMode): void {
+    this.barMode.set(mode);
+  }
+
+  overrideFor(exerciseId: string): Level | null {
+    return this.overrides()[exerciseId] ?? null;
+  }
+
+  setOverride(exerciseId: string, level: Level | null): void {
+    this.overrides.update((prev) => {
+      const next = { ...prev };
+      if (level === null) delete next[exerciseId];
+      else next[exerciseId] = level;
+      return next;
+    });
   }
 
   saveLog(log: ExerciseLog): void {
@@ -133,10 +182,6 @@ export class ProgramService {
       .at(-1);
   }
 
-  exercise(id: string): Exercise | undefined {
-    return this.exercisesById.get(id);
-  }
-
   today(): string {
     return isoDay();
   }
@@ -148,23 +193,20 @@ export class ProgramService {
   stats(sessionId: string): SessionStats | null {
     const session = this.session(sessionId);
     if (!session) return null;
-    const level = this.level();
     const equipment = new Set<Equipment>();
     const muscles = new Set<MuscleGroup>();
     let sets = 0;
     let seconds = 0;
-    for (const item of session.items) {
-      const exercise = this.exercisesById.get(item.exerciseId);
-      if (!exercise) continue;
-      const p = item.prescription[level];
-      sets += p.sets;
-      seconds += p.sets * (EXECUTION_SECONDS + p.restSeconds);
-      exercise.equipment.filter((e) => e !== 'nessuno').forEach((e) => equipment.add(e));
-      muscles.add(exercise.muscles[0]);
+    const resolved = this.resolve(session);
+    for (const r of resolved) {
+      sets += r.prescription.sets;
+      seconds += r.prescription.sets * (EXECUTION_SECONDS + r.prescription.restSeconds);
+      r.exercise.equipment.filter((e) => e !== 'nessuno').forEach((e) => equipment.add(e));
+      muscles.add(r.exercise.muscles[0]);
     }
     const minutes = Math.round((seconds / 60 + WARMUP_MINUTES) / 5) * 5;
     return {
-      exercises: session.items.length,
+      exercises: resolved.length,
       sets,
       minutes,
       equipment: [...equipment],
@@ -176,12 +218,13 @@ export class ProgramService {
     const session = this.session(sessionId);
     if (!session) return { done: 0, total: 0 };
     const start = weekStartIso();
+    const ids = new Set(this.resolve(session).map((r) => r.exercise.id));
     const done = new Set(
       this.logs()
-        .filter((l) => l.sessionId === sessionId && l.date >= start)
+        .filter((l) => l.sessionId === sessionId && l.date >= start && ids.has(l.exerciseId))
         .map((l) => l.exerciseId),
     ).size;
-    return { done, total: new Set(session.items.map((i) => i.exerciseId)).size };
+    return { done, total: ids.size };
   }
 
   isLoggedToday(sessionId: string, exerciseId: string): boolean {
@@ -200,21 +243,44 @@ export class ProgramService {
   }
 
   weeklyVolume(): MuscleVolume[] {
-    const level = this.level();
     const acc = new Map<MuscleGroup, { sets: number; days: Set<string> }>(
       MUSCLES.map((m) => [m, { sets: 0, days: new Set<string>() }]),
     );
     for (const session of this.program.sessions) {
-      for (const item of session.items) {
-        const exercise = this.exercisesById.get(item.exerciseId);
-        const entry = exercise ? acc.get(exercise.muscles[0]) : undefined;
+      for (const r of this.resolve(session)) {
+        const entry = acc.get(r.exercise.muscles[0]);
         if (!entry) continue;
-        entry.sets += item.prescription[level].sets;
+        entry.sets += r.prescription.sets;
         entry.days.add(session.id);
       }
     }
     return [...acc.entries()]
       .map(([muscle, v]) => ({ muscle, sets: v.sets, days: v.days.size }))
       .sort((a, b) => b.sets - a.sets);
+  }
+
+  private resolve(session: Session): ResolvedItem[] {
+    const noBar = this.barMode() === 'senza';
+    const overrides = this.overrides();
+    const globalLevel = this.level();
+    return session.items.flatMap((item) => {
+      const original = this.exercisesById.get(item.exerciseId);
+      if (!original) return [];
+      const alt = noBar && original.equipment.includes('sbarra') ? item.alternative : undefined;
+      const exercise = alt ? this.exercisesById.get(alt.exerciseId) : original;
+      if (!exercise) return [];
+      const prescriptions = alt ? alt.prescription : item.prescription;
+      const level = overrides[exercise.id] ?? globalLevel;
+      return [
+        {
+          exercise,
+          variant: exercise.variants[level],
+          prescription: prescriptions[level],
+          level,
+          isAlternative: alt !== undefined,
+          replaces: alt ? original.name : undefined,
+        },
+      ];
+    });
   }
 }

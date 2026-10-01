@@ -1,4 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
+import { Level } from '../models/exercise.model';
 import { ProgramService, ResolvedItem } from '../services/program.service';
 import { ExerciseMedia } from './exercise-media';
 import { RestTimer } from './rest-timer';
@@ -23,6 +24,11 @@ import { SetTracker } from './set-tracker';
 
       <div class="flex flex-1 flex-col gap-4 p-4">
         <header>
+          @if (item().isAlternative) {
+            <p class="mb-2 text-xs font-bold text-accent">
+              Alternativa senza sbarra · al posto di {{ item().replaces }}
+            </p>
+          }
           <p class="text-xs uppercase tracking-wide text-muted">{{ item().exercise.name }}</p>
           <h2 class="mt-1 text-xl font-bold tracking-tight">{{ item().variant.name }}</h2>
         </header>
@@ -32,6 +38,24 @@ import { SetTracker } from './set-tracker';
             <li class="rounded bg-subtle px-2 py-1 text-xs text-muted">{{ tag }}</li>
           }
         </ul>
+
+        <div class="flex items-center gap-3">
+          <span class="text-xs uppercase tracking-wide text-muted">Livello</span>
+          <div class="flex flex-1 overflow-hidden rounded border border-line-strong" role="radiogroup" aria-label="Livello esercizio">
+            @for (opt of levelOptions; track opt.label) {
+              <button
+                type="button"
+                role="radio"
+                class="h-9 flex-1 text-xs"
+                [attr.aria-checked]="isActive(opt.value)"
+                [class]="isActive(opt.value) ? activeClass : inactiveClass"
+                (click)="setOverride(opt.value)"
+              >
+                {{ opt.label }}
+              </button>
+            }
+          </div>
+        </div>
 
         <dl class="grid grid-cols-3 gap-4 border-y border-line py-4">
           <div>
@@ -90,15 +114,32 @@ export class ExerciseCard {
     this.service.isLoggedToday(this.sessionId(), this.item().exercise.id),
   );
   protected readonly last = computed(() =>
-    this.service.lastLog(this.sessionId(), this.item().exercise.id, this.service.level()),
+    this.service.lastLog(this.sessionId(), this.item().exercise.id, this.item().level),
   );
+
+  protected readonly levelOptions: { value: Level | null; label: string }[] = [
+    { value: null, label: 'Auto' },
+    { value: 'base', label: 'Base' },
+    { value: 'intermedio', label: 'Interm.' },
+    { value: 'avanzato', label: 'Avanz.' },
+  ];
+  protected readonly activeClass = 'bg-indigo-600 text-white';
+  protected readonly inactiveClass = 'bg-surface text-body hover:bg-subtle';
+
+  protected isActive(value: Level | null): boolean {
+    return this.service.overrideFor(this.item().exercise.id) === value;
+  }
+
+  protected setOverride(value: Level | null): void {
+    this.service.setOverride(this.item().exercise.id, value);
+  }
 
   protected onSaved(setsCompleted: number[]): void {
     this.service.saveLog({
       sessionId: this.sessionId(),
       exerciseId: this.item().exercise.id,
       date: this.service.today(),
-      level: this.service.level(),
+      level: this.item().level,
       setsCompleted,
     });
   }

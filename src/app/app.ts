@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { BarSwitch } from './components/bar-switch';
 import { LevelSwitch } from './components/level-switch';
 import { ThemeService } from './services/theme.service';
 
@@ -11,7 +12,7 @@ interface NavItem {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LevelSwitch],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LevelSwitch, BarSwitch],
   template: `
     <div class="flex min-h-screen flex-col bg-page text-ink">
       <header class="z-20 border-b border-line bg-surface md:sticky md:top-0">
@@ -32,8 +33,9 @@ interface NavItem {
               </a>
             }
           </nav>
-          <div class="flex w-full items-center gap-4 md:ml-auto md:w-auto">
-            <app-level-switch class="flex-1 md:flex-none" />
+          <div class="flex w-full flex-wrap items-center gap-4 md:ml-auto md:w-auto">
+            <app-level-switch class="w-full sm:w-auto" />
+            <app-bar-switch class="flex-1 sm:flex-none" />
             <button
               type="button"
               class="h-11 shrink-0 rounded border border-line-strong px-4 text-sm text-body hover:bg-subtle md:h-10"

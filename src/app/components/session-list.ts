@@ -78,6 +78,9 @@ interface WeekRow {
           <p class="text-xs font-medium uppercase tracking-widest text-muted">Livello attuale</p>
           <h2 class="mt-3 text-3xl font-bold tracking-tight">{{ levelLabel() }}</h2>
           <p class="mt-4 text-sm text-body">{{ levelDescription() }}</p>
+          <p class="mt-4 text-xs uppercase tracking-wide text-muted">
+            Modalità: {{ service.barMode() === 'senza' ? 'senza sbarra' : 'con sbarra' }}
+          </p>
         </div>
       </section>
 
@@ -140,7 +143,7 @@ interface WeekRow {
   `,
 })
 export class SessionList {
-  private readonly service = inject(ProgramService);
+  protected readonly service = inject(ProgramService);
   private readonly todayDay = this.service.todayWeekday();
 
   protected readonly levelLabel = computed(() => LEVEL_LABEL[this.service.level()]);
