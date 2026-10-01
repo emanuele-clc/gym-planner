@@ -36,6 +36,15 @@ const SECTIONS: GuideSection[] = [
     ],
   },
   {
+    title: 'Elastici',
+    items: [
+      'Attiva "Con elastici": ogni seduta aggiunge 2-3 esercizi e le alternative senza sbarra usano l’elastico.',
+      'Scegli la resistenza in modo da arrivare vicino al cedimento tra 10 e 15 ripetizioni; passa a un elastico più forte quando superi le 15.',
+      'Ancora l’elastico a un punto fisso (porta con ancoraggio, palo, maniglia robusta) e controlla che non sia usurato prima di ogni seduta.',
+      'Nelle immagini degli esercizi con elastico spesso compare un cavo: il movimento è lo stesso.',
+    ],
+  },
+  {
     title: 'Recupero',
     items: [
       'Ogni gruppo muscolare è allenato 2 volte a settimana, con almeno 48 ore tra le sedute.',

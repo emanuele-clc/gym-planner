@@ -58,11 +58,51 @@ const ALTERNATIVES: Record<string, Alternative | undefined> = {
   },
 };
 
+const BAND_ALTERNATIVES: Record<string, Alternative | undefined> = {
+  pullup: {
+    exerciseId: 'band-lat-pulldown',
+    prescription: rx(reps(4, 10, 15, 90), reps(4, 10, 15, 90), reps(4, 12, 15, 90)),
+  },
+  chinup: {
+    exerciseId: 'band-curl',
+    prescription: rx(reps(3, 10, 15, 60), reps(3, 10, 15, 60), reps(3, 12, 15, 60)),
+  },
+  'vbar-pullup': {
+    exerciseId: 'band-face-pull',
+    prescription: rx(reps(3, 12, 15, 60), reps(3, 12, 15, 60), reps(3, 15, 20, 60)),
+  },
+  'side-chin': {
+    exerciseId: 'band-row-single',
+    prescription: rx(reps(3, 10, 15, 60), reps(3, 10, 15, 60), reps(3, 12, 15, 60)),
+  },
+  'australian-row': {
+    exerciseId: 'band-row',
+    prescription: rx(reps(3, 10, 15, 60), reps(3, 12, 15, 60), reps(3, 12, 15, 60)),
+  },
+  'row-supinato': {
+    exerciseId: 'band-hammer-curl',
+    prescription: rx(reps(3, 10, 15, 60), reps(3, 10, 15, 60), reps(3, 12, 15, 60)),
+  },
+  'scapular-pullup': {
+    exerciseId: 'band-pull-apart',
+    prescription: rx(reps(3, 12, 15, 45), reps(3, 15, 20, 45), reps(3, 15, 20, 45)),
+  },
+};
+
 const item = (exerciseId: string, prescription: Record<Level, Prescription>): SessionItem => ({
   exerciseId,
   prescription,
   alternative: ALTERNATIVES[exerciseId],
+  bandAlternative: BAND_ALTERNATIVES[exerciseId],
 });
+
+const bandItem = (exerciseId: string, prescription: Record<Level, Prescription>): SessionItem => ({
+  exerciseId,
+  prescription,
+});
+
+const bandRx = (min: number, max: number): Record<Level, Prescription> =>
+  rx(reps(3, min, max, 45), reps(3, min, max, 45), reps(3, min + 2, max + 3, 45));
 
 export const PROGRAM: Program = {
   warmup: [
@@ -88,6 +128,7 @@ export const PROGRAM: Program = {
         item('plank', rx(secs(3, 20, 30, 60), secs(3, 30, 45, 60), reps(3, 6, 10, 60))),
         item('dead-bug', rx(reps(3, 8, 12, 45), reps(3, 10, 12, 45), reps(3, 10, 12, 45))),
       ],
+      bandItems: [bandItem('band-lateral-raise', bandRx(12, 15)), bandItem('band-pushdown', bandRx(12, 15)), bandItem('band-chest-fly', bandRx(12, 15))],
     },
     {
       id: 'mar-pull',
@@ -105,6 +146,7 @@ export const PROGRAM: Program = {
         item('dead-hang', rx(secs(3, 15, 25, 60), secs(3, 30, 45, 60), secs(3, 10, 20, 60))),
         item('bicycle', rx(reps(3, 15, 20, 45), reps(3, 20, 30, 45), reps(3, 30, 40, 45))),
       ],
+      bandItems: [bandItem('band-face-pull', bandRx(12, 15)), bandItem('band-curl', bandRx(10, 15))],
     },
     {
       id: 'mer-gambe',
@@ -122,6 +164,7 @@ export const PROGRAM: Program = {
         item('leg-raise', rx(reps(3, 8, 12, 60), reps(3, 8, 12, 60), reps(3, 8, 12, 60))),
         item('plank', rx(secs(3, 30, 45, 60), secs(3, 45, 60, 60), reps(3, 6, 10, 60))),
       ],
+      bandItems: [bandItem('band-glute-bridge', bandRx(12, 15)), bandItem('band-lateral-walk', bandRx(12, 15)), bandItem('band-good-morning', bandRx(12, 15))],
     },
     {
       id: 'ven-upper',
@@ -139,6 +182,7 @@ export const PROGRAM: Program = {
         item('hollow', rx(secs(3, 20, 30, 45), secs(3, 30, 30, 45), secs(3, 30, 40, 45))),
         item('russian-twist', rx(reps(3, 16, 20, 45), reps(3, 20, 30, 45), reps(3, 20, 30, 45))),
       ],
+      bandItems: [bandItem('band-lateral-raise', bandRx(12, 15)), bandItem('band-pushdown', bandRx(12, 15)), bandItem('band-curl', bandRx(10, 15))],
     },
     {
       id: 'sab-gambe',
@@ -156,6 +200,7 @@ export const PROGRAM: Program = {
         item('leg-raise', rx(reps(3, 8, 12, 60), reps(3, 8, 12, 60), reps(3, 8, 12, 60))),
         item('side-plank', rx(secs(3, 20, 30, 45), secs(3, 30, 40, 45), secs(3, 40, 50, 45))),
       ],
+      bandItems: [bandItem('band-squat', bandRx(12, 15)), bandItem('band-ham-curl', bandRx(12, 15)), bandItem('band-calf-raise', bandRx(15, 20))],
     },
   ],
 };

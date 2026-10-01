@@ -7,6 +7,7 @@ import {
   Prescription,
   Program,
   Session,
+  SessionItem,
   WEEKDAYS,
   Weekday,
 } from '../models/program.model';
@@ -62,6 +63,7 @@ const LOGS_KEY = 'cp.logs';
 const BAR_KEY = 'cp.bar';
 const OVERRIDES_KEY = 'cp.overrides';
 const SWAPS_KEY = 'cp.swaps';
+const BANDS_KEY = 'cp.bands';
 
 const isLevel = (value: unknown): value is Level =>
   typeof value === 'string' && (LEVELS as readonly string[]).includes(value);
@@ -113,6 +115,8 @@ const readOverrides = (): Record<string, Level> => {
   }
 };
 
+const readBands = (): boolean => localStorage.getItem(BANDS_KEY) === 'true';
+
 const readSwaps = (): Record<string, boolean> => {
   const raw = localStorage.getItem(SWAPS_KEY);
   if (!raw) return {};
@@ -138,6 +142,7 @@ export class ProgramService {
   readonly barMode = signal<BarMode>(readBarMode());
   readonly overrides = signal<Record<string, Level>>(readOverrides());
   readonly swaps = signal<Record<string, boolean>>(readSwaps());
+  readonly bands = signal<boolean>(readBands());
   readonly logs = signal<ExerciseLog[]>(readLogs());
 
   constructor() {
@@ -145,6 +150,7 @@ export class ProgramService {
     effect(() => localStorage.setItem(BAR_KEY, this.barMode()));
     effect(() => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(this.overrides())));
     effect(() => localStorage.setItem(SWAPS_KEY, JSON.stringify(this.swaps())));
+    effect(() => localStorage.setItem(BANDS_KEY, String(this.bands())));
     effect(() => localStorage.setItem(LOGS_KEY, JSON.stringify(this.logs())));
   }
 
@@ -168,6 +174,10 @@ export class ProgramService {
   setBarMode(mode: BarMode): void {
     this.barMode.set(mode);
     this.swaps.set({});
+  }
+
+  setBands(on: boolean): void {
+    this.bands.set(on);
   }
 
   toggleAlternative(originalId: string, currentlyAlternative: boolean): void {
@@ -286,36 +296,43 @@ export class ProgramService {
   }
 
   private resolve(session: Session): ResolvedItem[] {
+    const base = session.items.flatMap((item) => this.resolveItem(item));
+    if (!this.bands()) return base;
+    const present = new Set(base.map((r) => r.exercise.id));
+    const extras = (session.bandItems ?? []).flatMap((item) => this.resolveItem(item));
+    return [...base, ...extras.filter((r) => !present.has(r.exercise.id))];
+  }
+
+  private resolveItem(item: SessionItem): ResolvedItem[] {
     const noBar = this.barMode() === 'senza';
     const swaps = this.swaps();
     const overrides = this.overrides();
     const globalLevel = this.level();
-    return session.items.flatMap((item) => {
-      const original = this.exercisesById.get(item.exerciseId);
-      if (!original) return [];
-      const swappable = original.equipment.includes('sbarra') ? item.alternative : undefined;
-      const alt = swappable && (swaps[original.id] ?? noBar) ? swappable : undefined;
-      const exercise = alt ? this.exercisesById.get(alt.exerciseId) : original;
-      if (!exercise) return [];
-      const altExercise = swappable ? this.exercisesById.get(swappable.exerciseId) : undefined;
-      const prescriptions = alt ? alt.prescription : item.prescription;
-      const level = overrides[exercise.id] ?? globalLevel;
-      return [
-        {
-          exercise,
-          variant: exercise.variants[level],
-          prescription: prescriptions[level],
-          level,
-          isAlternative: alt !== undefined,
-          replaces: alt ? original.name : undefined,
-          originalId: original.id,
-          swapLabel: alt
-            ? `Torna a ${original.name}`
-            : altExercise
-              ? `Senza sbarra: ${altExercise.name}`
-              : undefined,
-        },
-      ];
-    });
+    const original = this.exercisesById.get(item.exerciseId);
+    if (!original) return [];
+    const candidate = this.bands() ? (item.bandAlternative ?? item.alternative) : item.alternative;
+    const swappable = original.equipment.includes('sbarra') ? candidate : undefined;
+    const alt = swappable && (swaps[original.id] ?? noBar) ? swappable : undefined;
+    const exercise = alt ? this.exercisesById.get(alt.exerciseId) : original;
+    if (!exercise) return [];
+    const altExercise = swappable ? this.exercisesById.get(swappable.exerciseId) : undefined;
+    const prescriptions = alt ? alt.prescription : item.prescription;
+    const level = overrides[exercise.id] ?? globalLevel;
+    return [
+      {
+        exercise,
+        variant: exercise.variants[level],
+        prescription: prescriptions[level],
+        level,
+        isAlternative: alt !== undefined,
+        replaces: alt ? original.name : undefined,
+        originalId: original.id,
+        swapLabel: alt
+          ? `Torna a ${original.name}`
+          : altExercise
+            ? `Senza sbarra: ${altExercise.name}`
+            : undefined,
+      },
+    ];
   }
 }

@@ -1,4 +1,4 @@
-import { Exercise, Variant } from '../models/exercise.model';
+import { Exercise, Level, Variant } from '../models/exercise.model';
 
 const DB_BASE = 'https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises';
 
@@ -756,3 +756,168 @@ export const EXERCISES: Exercise[] = [
     },
   },
 ];
+
+const CABLE_NOTE = 'Nell’immagine c’è un cavo: tu usa un elastico ancorato a un punto fisso.';
+
+const bandVariants = (
+  id: string,
+  name: string,
+  frames: string[],
+  note?: string,
+): Record<Level, Variant> => ({
+  base: variant(`${id}-base`, `${name} (elastico leggero)`, frames, note),
+  intermedio: variant(`${id}-int`, `${name} (elastico medio)`, frames, note),
+  avanzato: variant(`${id}-avv`, `${name} (elastico forte)`, frames, note),
+});
+
+interface BandSpec {
+  id: string;
+  name: string;
+  muscles: Exercise['muscles'];
+  cues: string[];
+  frames: string[];
+  note?: string;
+}
+
+const BAND_SPECS: BandSpec[] = [
+  {
+    id: 'band-lat-pulldown',
+    name: 'Lat pulldown con elastico',
+    muscles: ['dorso', 'bicipiti'],
+    cues: ['Elastico ancorato in alto, in ginocchio sotto l’ancoraggio', 'Tira i gomiti verso le costole', 'Petto in fuori, spalle basse'],
+    frames: db('Wide-Grip_Lat_Pulldown'),
+    note: CABLE_NOTE,
+  },
+  {
+    id: 'band-curl',
+    name: 'Curl con elastico',
+    muscles: ['bicipiti'],
+    cues: ['Stai sull’elastico con i piedi', 'Gomiti fermi lungo i fianchi', 'Scendi in 3" fino a braccia tese'],
+    frames: db('Standing_Biceps_Cable_Curl'),
+    note: 'Nell’immagine c’è un cavo: tu stai in piedi sull’elastico.',
+  },
+  {
+    id: 'band-hammer-curl',
+    name: 'Curl a martello con elastico',
+    muscles: ['bicipiti'],
+    cues: ['Stai sull’elastico, presa neutra', 'Gomiti fermi lungo i fianchi', 'Scendi lentamente'],
+    frames: db('Cable_Hammer_Curls_-_Rope_Attachment'),
+    note: 'Nell’immagine c’è un cavo: tu stai in piedi sull’elastico.',
+  },
+  {
+    id: 'band-row',
+    name: 'Row con elastico',
+    muscles: ['dorso', 'bicipiti'],
+    cues: ['Elastico ancorato all’altezza del petto', 'Tira verso l’ombelico, scapole unite', 'Schiena dritta, non dondolare'],
+    frames: db('Seated_Cable_Rows'),
+    note: CABLE_NOTE,
+  },
+  {
+    id: 'band-row-single',
+    name: 'Row a un braccio con elastico',
+    muscles: ['dorso', 'bicipiti'],
+    cues: ['Elastico ancorato all’altezza del petto', 'Tira il gomito all’indietro, vicino al busto', 'Non ruotare il busto'],
+    frames: db('Seated_One-arm_Cable_Pulley_Rows'),
+    note: CABLE_NOTE,
+  },
+  {
+    id: 'band-face-pull',
+    name: 'Face pull con elastico',
+    muscles: ['spalle', 'dorso'],
+    cues: ['Elastico ancorato all’altezza del viso', 'Tira verso la fronte, gomiti alti', 'Ruota le mani verso l’esterno'],
+    frames: db('Face_Pull'),
+    note: CABLE_NOTE,
+  },
+  {
+    id: 'band-pull-apart',
+    name: 'Band pull-apart',
+    muscles: ['spalle', 'dorso'],
+    cues: ['Elastico teso davanti al petto, braccia tese', 'Apri le braccia fino ad allinearle al petto', 'Stringi le scapole'],
+    frames: db('Band_Pull_Apart'),
+  },
+  {
+    id: 'band-lateral-raise',
+    name: 'Alzate laterali con elastico',
+    muscles: ['spalle'],
+    cues: ['Stai sull’elastico, gomiti leggermente piegati', 'Alza le braccia di lato fino all’altezza delle spalle', 'Scendi lentamente'],
+    frames: db('Lateral_Raise_-_With_Bands'),
+  },
+  {
+    id: 'band-shoulder-press',
+    name: 'Shoulder press con elastico',
+    muscles: ['spalle', 'tricipiti'],
+    cues: ['Stai sull’elastico, mani all’altezza delle spalle', 'Spingi in alto fino a braccia tese', 'Addome contratto, schiena neutra'],
+    frames: db('Shoulder_Press_-_With_Bands'),
+  },
+  {
+    id: 'band-pushdown',
+    name: 'Pushdown tricipiti con elastico',
+    muscles: ['tricipiti'],
+    cues: ['Elastico ancorato in alto', 'Gomiti fermi lungo i fianchi', 'Estendi fino a braccia tese'],
+    frames: db('Triceps_Pushdown'),
+    note: CABLE_NOTE,
+  },
+  {
+    id: 'band-chest-fly',
+    name: 'Aperture petto con elastico',
+    muscles: ['petto'],
+    cues: ['Elastico ancorato dietro di te all’altezza del petto', 'Porta le mani davanti, braccia leggermente piegate', 'Stringi il petto'],
+    frames: db('Cross_Over_-_With_Bands'),
+  },
+  {
+    id: 'band-squat',
+    name: 'Squat con elastico',
+    muscles: ['quadricipiti', 'glutei'],
+    cues: ['Stai sull’elastico, mani all’altezza delle spalle', 'Scendi con schiena neutra', 'Spingi con tutto il piede'],
+    frames: db('Squats_-_With_Bands'),
+  },
+  {
+    id: 'band-good-morning',
+    name: 'Good morning con elastico',
+    muscles: ['femorali', 'glutei'],
+    cues: ['Stai sull’elastico, elastico dietro il collo', 'Spingi i fianchi indietro, schiena piatta', 'Risali contraendo i glutei'],
+    frames: db('Band_Good_Morning'),
+  },
+  {
+    id: 'band-glute-bridge',
+    name: 'Glute bridge con elastico',
+    muscles: ['glutei', 'femorali'],
+    cues: ['Elastico sopra le ginocchia', 'Spingi le ginocchia verso l’esterno', 'Blocca 1" in alto'],
+    frames: repdb('banded-glute-bridge'),
+  },
+  {
+    id: 'band-lateral-walk',
+    name: 'Passi laterali con elastico',
+    muscles: ['glutei'],
+    cues: ['Elastico sopra le ginocchia o alle caviglie', 'Mezzo squat, passi laterali', 'Ginocchia in linea con i piedi'],
+    frames: repdb('banded-lateral-walk'),
+  },
+  {
+    id: 'band-ham-curl',
+    name: 'Leg curl con elastico',
+    muscles: ['femorali'],
+    cues: ['Elastico ancorato davanti ai piedi', 'Porta i talloni verso i glutei', 'Torna lentamente'],
+    frames: db('Seated_Band_Hamstring_Curl'),
+    note: 'Nell’immagine è seduto su una panca: tu siediti per terra o su una sedia.',
+  },
+  {
+    id: 'band-calf-raise',
+    name: 'Calf raise con elastico',
+    muscles: ['polpacci'],
+    cues: ['Stai sull’elastico', 'Sali sulle punte più in alto possibile', 'Scendi lentamente'],
+    frames: db('Calf_Raises_-_With_Bands'),
+  },
+];
+
+EXERCISES.push(
+  ...BAND_SPECS.map(
+    (spec): Exercise => ({
+      id: spec.id,
+      name: spec.name,
+      muscles: spec.muscles,
+      equipment: ['elastici'],
+      cues: spec.cues,
+      variants: bandVariants(spec.id, spec.name, spec.frames, spec.note),
+    }),
+  ),
+);

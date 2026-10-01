@@ -3,13 +3,14 @@ import { RouterLink } from '@angular/router';
 import { LEVEL_LABEL } from '../models/exercise.model';
 import { WEEKDAY_LABEL } from '../models/program.model';
 import { ProgramService } from '../services/program.service';
+import { BandsSwitch } from './bands-switch';
 import { BarSwitch } from './bar-switch';
 import { ExerciseCard } from './exercise-card';
 import { ProgressBar } from './progress-bar';
 
 @Component({
   selector: 'app-session-detail',
-  imports: [RouterLink, ExerciseCard, ProgressBar, BarSwitch],
+  imports: [RouterLink, ExerciseCard, ProgressBar, BarSwitch, BandsSwitch],
   template: `
     <a routerLink="/" class="text-sm text-accent hover:underline">Settimana</a>
 
@@ -95,16 +96,20 @@ import { ProgressBar } from './progress-bar';
           </aside>
 
           <div class="flex flex-col gap-6">
-            @if (hasBarItems()) {
-              <section class="rounded border border-line bg-surface p-4">
-                <h2 class="text-sm font-bold">Esercizi alla sbarra</h2>
+            <section class="rounded border border-line bg-surface p-4">
+              <h2 class="text-sm font-bold">Attrezzatura</h2>
+              @if (hasBarItems()) {
                 <p class="mt-1 text-sm text-muted">
                   Ogni esercizio alla sbarra ha un’alternativa senza sbarra. Cambia tutta la seduta qui,
                   oppure un esercizio alla volta dal pulsante nella card.
                 </p>
                 <app-bar-switch class="mt-4 block" />
-              </section>
-            }
+              }
+              <p class="mt-4 text-sm text-muted">
+                Con gli elastici la seduta aggiunge esercizi per spalle, braccia e gambe e usa alternative più efficaci.
+              </p>
+              <app-bands-switch class="mt-4 block" />
+            </section>
 
             <details class="rounded border border-line bg-surface p-4" open>
               <summary class="cursor-pointer text-sm font-bold">Riscaldamento · 8 min</summary>

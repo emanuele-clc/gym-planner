@@ -33,6 +33,7 @@ export interface SessionItem {
   exerciseId: string;
   prescription: Record<Level, Prescription>;
   alternative?: Alternative;
+  bandAlternative?: Alternative;
 }
 
 export interface Session {
@@ -40,6 +41,7 @@ export interface Session {
   day: Weekday;
   title: string;
   items: SessionItem[];
+  bandItems?: SessionItem[];
 }
 
 export interface Program {

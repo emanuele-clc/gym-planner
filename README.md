@@ -8,6 +8,9 @@ App Angular per un programma di allenamento a corpo libero: 5 sedute a settimana
 
 - Settimana: Push, Pull, Gambe + core, Upper, Gambe + core (lunedì, martedì, mercoledì, venerdì, sabato)
 - Cambio livello: variante dell'esercizio, serie, ripetizioni e recupero si aggiornano
+- Livello cambiabile anche per singolo esercizio
+- Modalità senza sbarra: ogni esercizio alla sbarra ha un'alternativa (tavolo, zaino, elastici)
+- Modalità con elastici: esercizi aggiuntivi per spalle, braccia e gambe
 - Immagini a due frame per ogni esercizio
 - Registrazione delle ripetizioni per serie, salvata nel browser (localStorage)
 - Timer di recupero per esercizio
