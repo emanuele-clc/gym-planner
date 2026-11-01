@@ -8,7 +8,44 @@ interface GuideSection {
   items: string[];
 }
 
-const SECTIONS: GuideSection[] = [
+const GYM_SECTIONS: GuideSection[] = [
+  {
+    title: 'Progressione dei carichi',
+    items: [
+      'Registra ogni seduta: senza numeri non c’è progressione.',
+      'Doppia progressione: quando fai il massimo delle ripetizioni su tutte le serie, aumenta il carico (2,5 kg sul bilanciere, il manubrio successivo, una piastra in più al pacco pesi) e riparti dal minimo.',
+      'Se non raggiungi il minimo delle ripetizioni, togli peso: non peggiorare la tecnica.',
+      'Il livello si cambia anche per singolo esercizio: puoi tenere lo squat al Smith (Base) e il resto su Intermedio.',
+    ],
+  },
+  {
+    title: 'Sicurezza nel rack',
+    items: [
+      'Squat e panca col bilanciere: imposta sempre i braccetti di sicurezza appena sotto il punto più basso del movimento.',
+      'Il Smith ha i fermi di sicurezza: ruota il bilanciere per agganciarlo in qualsiasi punto.',
+      'Usa le clip sui dischi. Rimetti manubri e dischi a posto.',
+      'Sulle macchine regola sedile e leve prima della prima serie: il perno della macchina va allineato all’articolazione.',
+    ],
+  },
+  {
+    title: 'Esecuzione',
+    items: [
+      'Tempo: 1" in spinta, 2-3" in discesa, nessun rimbalzo.',
+      'Lascia 1-3 ripetizioni di riserva sui multiarticolari pesanti; vai vicino al cedimento su macchine e cavo.',
+      'Rispetta i recuperi indicati: 2-3 minuti sui multiarticolari, 60-75" sull’isolamento.',
+    ],
+  },
+  {
+    title: 'Cardio',
+    items: [
+      'Riscaldamento: 5 minuti di cyclette, ellittica o tapis roulant prima di ogni seduta.',
+      'Per il cuore: 2-3 volte a settimana 20-30 minuti a un ritmo in cui riesci ancora a parlare, a fine seduta o nei giorni di riposo.',
+      'Prima delle sedute di gambe evita il cardio intenso: toglie forza a squat e stacco.',
+    ],
+  },
+];
+
+const HOME_SECTIONS: GuideSection[] = [
   {
     title: 'Progressione',
     items: [
@@ -44,11 +81,14 @@ const SECTIONS: GuideSection[] = [
       'Nelle immagini degli esercizi con elastico spesso compare un cavo: il movimento è lo stesso.',
     ],
   },
+];
+
+const SHARED_SECTIONS: GuideSection[] = [
   {
     title: 'Recupero',
     items: [
       'Ogni gruppo muscolare è allenato 2 volte a settimana, con almeno 48 ore tra le sedute.',
-      'Ogni 6-8 settimane fai una settimana di scarico: metà delle serie, stesse varianti.',
+      'Ogni 6-8 settimane fai una settimana di scarico: metà delle serie e carichi ridotti del 10-20%.',
       'Dormi 7-8 ore per notte.',
       'Dolore alle articolazioni: sostituisci l’esercizio con una variante più facile.',
     ],
@@ -91,7 +131,7 @@ const SECTIONS: GuideSection[] = [
     </section>
 
     <div class="mt-6 grid gap-6 md:grid-cols-2">
-      @for (section of sections; track section.title) {
+      @for (section of sections(); track section.title) {
         <section class="rounded border border-line bg-surface p-4">
           <h2 class="text-sm font-semibold">{{ section.title }}</h2>
           <ul class="mt-4 list-disc pl-4 text-sm text-body">
@@ -107,7 +147,10 @@ const SECTIONS: GuideSection[] = [
 export class Guide {
   private readonly service = inject(ProgramService);
 
-  protected readonly sections = SECTIONS;
+  protected readonly sections = computed(() => [
+    ...(this.service.place() === 'palestra' ? GYM_SECTIONS : HOME_SECTIONS),
+    ...SHARED_SECTIONS,
+  ]);
   protected readonly volume = computed(() => this.service.weeklyVolume());
   protected readonly levelLabel = computed(() => LEVEL_LABEL[this.service.level()]);
 }

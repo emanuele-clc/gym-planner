@@ -1,12 +1,15 @@
-# Scheda corpo libero
+# Scheda palestra
 
-App Angular per un programma di allenamento a corpo libero: 5 sedute a settimana, 3 livelli (base, intermedio, avanzato), immagini per ogni esercizio, registrazione delle serie e timer di recupero. Pensata per il telefono.
+App Angular per un programma di allenamento in palestra (con piano alternativo a corpo libero): 5 sedute a settimana, 3 livelli (base, intermedio, avanzato), immagini per ogni esercizio, registrazione delle serie e timer di recupero. Pensata per il telefono.
 
 **Sito:** https://emanuele-clc.github.io/gym-planner/
 
 ## Funzioni
 
-- Settimana: Push, Pull, Gambe + core, Upper, Gambe + core (lunedì, martedì, mercoledì, venerdì, sabato)
+- Selettore Palestra / Corpo libero: due piani separati, lo storico resta per entrambi
+- Palestra: Push, Pull, Gambe (quadricipiti), Upper, Gambe (glutei e femorali) con rack + Smith, bilanciere, manubri, panca, cavo regolabile, pectoral / reverse fly, leg extension / leg curl, chest press; riscaldamento su cyclette, ellittica o tapis roulant
+- Livelli in palestra: Base = Smith e macchine, Intermedio = bilanciere e manubri, Avanzato = fermi, deficit, discese lente
+- Corpo libero: Push, Pull, Gambe + core, Upper, Gambe + core (lunedì, martedì, mercoledì, venerdì, sabato)
 - Cambio livello: variante dell'esercizio, serie, ripetizioni e recupero si aggiornano
 - Livello cambiabile anche per singolo esercizio
 - Modalità senza sbarra: ogni esercizio alla sbarra ha un'alternativa (tavolo, zaino, elastici)

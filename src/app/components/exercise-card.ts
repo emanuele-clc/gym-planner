@@ -26,7 +26,7 @@ import { SetTracker } from './set-tracker';
         <header>
           @if (item().isAlternative) {
             <p class="mb-2 text-xs font-bold text-accent">
-              Alternativa senza sbarra · al posto di {{ item().replaces }}
+              Alternativa {{ inGym() ? 'alla sbarra' : 'senza sbarra' }} · al posto di {{ item().replaces }}
             </p>
           }
           <p class="text-xs uppercase tracking-wide text-muted">{{ item().exercise.name }}</p>
@@ -116,6 +116,7 @@ export class ExerciseCard {
   readonly sessionId = input.required<string>();
   readonly index = input.required<number>();
 
+  protected readonly inGym = computed(() => this.service.place() === 'palestra');
   protected readonly tags = computed(() => [
     ...this.item().exercise.muscles,
     ...this.item().exercise.equipment.filter((e) => e !== 'nessuno'),

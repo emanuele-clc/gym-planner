@@ -96,6 +96,18 @@ import { ProgressBar } from './progress-bar';
           </aside>
 
           <div class="flex flex-col gap-6">
+            @if (inGym()) {
+              <section class="rounded border border-line bg-surface p-4">
+                <h2 class="text-sm font-bold">Attrezzatura</h2>
+                <p class="mt-1 text-sm text-muted">
+                  Rack con Smith e sbarra, bilanciere, manubri, panca regolabile, cavo regolabile,
+                  pectoral / reverse fly, leg extension / leg curl, chest press.
+                  @if (hasBarItems()) {
+                    Se la sbarra è occupata, usa il pulsante nella card per passare al cavo.
+                  }
+                </p>
+              </section>
+            } @else {
             <section class="rounded border border-line bg-surface p-4">
               <h2 class="text-sm font-bold">Attrezzatura</h2>
               @if (hasBarItems()) {
@@ -110,11 +122,12 @@ import { ProgressBar } from './progress-bar';
               </p>
               <app-bands-switch class="mt-4 block" />
             </section>
+            }
 
             <details class="rounded border border-line bg-surface p-4" open>
               <summary class="cursor-pointer text-sm font-bold">Riscaldamento · 8 min</summary>
               <ul class="mt-4 list-disc pl-4 text-sm text-body">
-                @for (step of warmup; track step) {
+                @for (step of warmup(); track step) {
                   <li class="mb-1">{{ step }}</li>
                 }
               </ul>
@@ -140,7 +153,8 @@ export class SessionDetail {
 
   readonly id = input.required<string>();
 
-  protected readonly warmup = this.service.program.warmup;
+  protected readonly warmup = computed(() => this.service.programFor(this.id()).warmup);
+  protected readonly inGym = computed(() => this.id().startsWith('pal-'));
   protected readonly session = computed(() => this.service.session(this.id()));
   protected readonly items = computed(() => this.service.items(this.id()));
   protected readonly stats = computed(() => this.service.stats(this.id()));

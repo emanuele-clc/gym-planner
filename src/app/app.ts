@@ -3,6 +3,8 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { BandsSwitch } from './components/bands-switch';
 import { BarSwitch } from './components/bar-switch';
 import { LevelSwitch } from './components/level-switch';
+import { PlaceSwitch } from './components/place-switch';
+import { ProgramService } from './services/program.service';
 import { ThemeService } from './services/theme.service';
 
 interface NavItem {
@@ -13,14 +15,14 @@ interface NavItem {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, LevelSwitch, BarSwitch, BandsSwitch],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, LevelSwitch, BarSwitch, BandsSwitch, PlaceSwitch],
   template: `
     <div class="flex min-h-screen flex-col bg-page text-ink">
       <header class="z-20 border-b border-line bg-surface md:sticky md:top-0">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-4 p-4">
           <a routerLink="/" class="flex items-center gap-3 text-base font-bold tracking-tight">
             <img src="icon-192.png" alt="" class="h-8 w-8 rounded" />
-            Scheda corpo libero
+            {{ programService.place() === 'palestra' ? 'Scheda palestra' : 'Scheda corpo libero' }}
           </a>
           <nav class="order-last flex w-full gap-6 text-sm md:order-none md:w-auto">
             @for (item of nav; track item.path) {
@@ -35,9 +37,12 @@ interface NavItem {
             }
           </nav>
           <div class="flex w-full flex-wrap items-center gap-4 md:ml-auto md:w-auto">
+            <app-place-switch class="w-full sm:w-auto" />
             <app-level-switch class="w-full sm:w-auto" />
-            <app-bar-switch class="flex-1 sm:flex-none" />
-            <app-bands-switch class="flex-1 sm:flex-none" />
+            @if (programService.place() === 'casa') {
+              <app-bar-switch class="flex-1 sm:flex-none" />
+              <app-bands-switch class="flex-1 sm:flex-none" />
+            }
             <button
               type="button"
               class="h-11 shrink-0 rounded border border-line-strong px-4 text-sm text-body hover:bg-subtle md:h-10"
@@ -69,6 +74,7 @@ interface NavItem {
 })
 export class App {
   protected readonly themeService = inject(ThemeService);
+  protected readonly programService = inject(ProgramService);
   protected readonly nav: NavItem[] = [
     { path: '/', label: 'Settimana', exact: true },
     { path: '/storico', label: 'Storico', exact: false },

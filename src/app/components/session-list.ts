@@ -2,13 +2,20 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LEVEL_LABEL, Level } from '../models/exercise.model';
 import { Session, WEEKDAYS, WEEKDAY_LABEL, Weekday } from '../models/program.model';
-import { Progress, ProgramService, SessionStats } from '../services/program.service';
+import { Place, Progress, ProgramService, SessionStats } from '../services/program.service';
 import { ProgressBar } from './progress-bar';
 
-const LEVEL_DESCRIPTION: Record<Level, string> = {
-  base: 'Varianti facili: negative, inclinate, con appoggio o elastico. Meno ripetizioni, più recupero.',
-  intermedio: 'Movimenti standard: dip alle parallele, trazioni, squat bulgaro, push-up declinati.',
-  avanzato: 'Varianti difficili: zaino con peso, monogamba, pliometria, push-up a un braccio.',
+const LEVEL_DESCRIPTION: Record<Place, Record<Level, string>> = {
+  palestra: {
+    base: 'Smith machine, macchine e manubri: movimenti guidati per imparare la tecnica. 10-12 ripetizioni.',
+    intermedio: 'Bilanciere e manubri liberi: panca, squat, stacco, rematore. 6-12 ripetizioni.',
+    avanzato: 'Più serie e carichi più alti: fermi, deficit, discese lente. 5-8 ripetizioni sui multiarticolari.',
+  },
+  casa: {
+    base: 'Varianti facili: negative, inclinate, con appoggio o elastico. Meno ripetizioni, più recupero.',
+    intermedio: 'Movimenti standard: dip alle parallele, trazioni, squat bulgaro, push-up declinati.',
+    avanzato: 'Varianti difficili: zaino con peso, monogamba, pliometria, push-up a un braccio.',
+  },
 };
 
 interface Plan {
@@ -79,7 +86,11 @@ interface WeekRow {
           <h2 class="mt-3 text-3xl font-bold tracking-tight">{{ levelLabel() }}</h2>
           <p class="mt-4 text-sm text-body">{{ levelDescription() }}</p>
           <p class="mt-4 text-xs uppercase tracking-wide text-muted">
-            Modalità: {{ service.barMode() === 'senza' ? 'senza sbarra' : 'con sbarra' }}
+            @if (service.place() === 'palestra') {
+              Piano: palestra
+            } @else {
+              Piano: corpo libero · {{ service.barMode() === 'senza' ? 'senza sbarra' : 'con sbarra' }}
+            }
           </p>
         </div>
       </section>
@@ -147,11 +158,11 @@ export class SessionList {
   private readonly todayDay = this.service.todayWeekday();
 
   protected readonly levelLabel = computed(() => LEVEL_LABEL[this.service.level()]);
-  protected readonly levelDescription = computed(() => LEVEL_DESCRIPTION[this.service.level()]);
+  protected readonly levelDescription = computed(() => LEVEL_DESCRIPTION[this.service.place()][this.service.level()]);
 
   protected readonly rows = computed<WeekRow[]>(() =>
     WEEKDAYS.map((day) => {
-      const session = this.service.program.sessions.find((s) => s.day === day);
+      const session = this.service.program().sessions.find((s) => s.day === day);
       const stats = session ? this.service.stats(session.id) : null;
       return {
         day,
@@ -180,7 +191,7 @@ export class SessionList {
   protected readonly totals = computed(() => {
     const plans = this.rows().flatMap((r) => (r.plan ? [r.plan] : []));
     const unique = new Set(
-      this.service.program.sessions.flatMap((s) => s.items.map((i) => i.exerciseId)),
+      this.service.program().sessions.flatMap((s) => s.items.map((i) => i.exerciseId)),
     );
     return [
       { label: 'Sedute a settimana', value: plans.length },

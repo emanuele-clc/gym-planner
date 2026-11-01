@@ -8,7 +8,20 @@ export const LEVEL_LABEL: Record<Level, string> = {
   avanzato: 'Avanzato',
 };
 
-export type Equipment = 'nessuno' | 'sbarra' | 'parallele' | 'sedia' | 'tavolo' | 'zaino' | 'elastici';
+export type Equipment =
+  | 'nessuno'
+  | 'sbarra'
+  | 'parallele'
+  | 'sedia'
+  | 'tavolo'
+  | 'zaino'
+  | 'elastici'
+  | 'bilanciere'
+  | 'manubri'
+  | 'panca'
+  | 'smith'
+  | 'cavo'
+  | 'macchina';
 
 export const MUSCLES = [
   'petto',

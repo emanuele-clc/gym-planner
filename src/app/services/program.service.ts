@@ -1,5 +1,7 @@
-import { Injectable, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import { EXERCISES } from '../data/exercises.data';
+import { GYM_EXERCISES } from '../data/gym-exercises.data';
+import { GYM_PROGRAM } from '../data/gym-program.data';
 import { PROGRAM } from '../data/program.data';
 import { Equipment, Exercise, LEVELS, Level, MUSCLES, MuscleGroup, Variant } from '../models/exercise.model';
 import {
@@ -13,6 +15,10 @@ import {
 } from '../models/program.model';
 
 export type BarMode = 'con' | 'senza';
+
+export type Place = 'palestra' | 'casa';
+
+const PROGRAMS: Record<Place, Program> = { palestra: GYM_PROGRAM, casa: PROGRAM };
 
 export interface ResolvedItem {
   exercise: Exercise;
@@ -64,6 +70,7 @@ const BAR_KEY = 'cp.bar';
 const OVERRIDES_KEY = 'cp.overrides';
 const SWAPS_KEY = 'cp.swaps';
 const BANDS_KEY = 'cp.bands';
+const PLACE_KEY = 'cp.place';
 
 const isLevel = (value: unknown): value is Level =>
   typeof value === 'string' && (LEVELS as readonly string[]).includes(value);
@@ -115,6 +122,8 @@ const readOverrides = (): Record<string, Level> => {
   }
 };
 
+const readPlace = (): Place => (localStorage.getItem(PLACE_KEY) === 'casa' ? 'casa' : 'palestra');
+
 const readBands = (): boolean => localStorage.getItem(BANDS_KEY) === 'true';
 
 const readSwaps = (): Record<string, boolean> => {
@@ -135,9 +144,10 @@ const readSwaps = (): Record<string, boolean> => {
 
 @Injectable({ providedIn: 'root' })
 export class ProgramService {
-  private readonly exercisesById = new Map(EXERCISES.map((e) => [e.id, e]));
+  private readonly exercisesById = new Map([...EXERCISES, ...GYM_EXERCISES].map((e) => [e.id, e]));
 
-  readonly program: Program = PROGRAM;
+  readonly place = signal<Place>(readPlace());
+  readonly program = computed<Program>(() => PROGRAMS[this.place()]);
   readonly level = signal<Level>(readLevel());
   readonly barMode = signal<BarMode>(readBarMode());
   readonly overrides = signal<Record<string, Level>>(readOverrides());
@@ -146,6 +156,7 @@ export class ProgramService {
   readonly logs = signal<ExerciseLog[]>(readLogs());
 
   constructor() {
+    effect(() => localStorage.setItem(PLACE_KEY, this.place()));
     effect(() => localStorage.setItem(LEVEL_KEY, this.level()));
     effect(() => localStorage.setItem(BAR_KEY, this.barMode()));
     effect(() => localStorage.setItem(OVERRIDES_KEY, JSON.stringify(this.overrides())));
@@ -154,8 +165,19 @@ export class ProgramService {
     effect(() => localStorage.setItem(LOGS_KEY, JSON.stringify(this.logs())));
   }
 
+  /** Cerca in entrambi i piani, così i link e lo storico restano validi dopo il cambio. */
   session(id: string): Session | undefined {
-    return this.program.sessions.find((s) => s.id === id);
+    return Object.values(PROGRAMS)
+      .flatMap((p) => p.sessions)
+      .find((s) => s.id === id);
+  }
+
+  programFor(sessionId: string): Program {
+    return Object.values(PROGRAMS).find((p) => p.sessions.some((s) => s.id === sessionId)) ?? this.program();
+  }
+
+  setPlace(place: Place): void {
+    this.place.set(place);
   }
 
   exercise(id: string): Exercise | undefined {
@@ -282,7 +304,7 @@ export class ProgramService {
     const acc = new Map<MuscleGroup, { sets: number; days: Set<string> }>(
       MUSCLES.map((m) => [m, { sets: 0, days: new Set<string>() }]),
     );
-    for (const session of this.program.sessions) {
+    for (const session of this.program().sessions) {
       for (const r of this.resolve(session)) {
         const entry = acc.get(r.exercise.muscles[0]);
         if (!entry) continue;
@@ -330,7 +352,7 @@ export class ProgramService {
         swapLabel: alt
           ? `Torna a ${original.name}`
           : altExercise
-            ? `Senza sbarra: ${altExercise.name}`
+            ? `${this.place() === 'palestra' ? 'Sbarra occupata' : 'Senza sbarra'}: ${altExercise.name}`
             : undefined,
       },
     ];
