@@ -1,7 +1,7 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LEVEL_LABEL } from '../models/exercise.model';
-import { WEEKDAY_LABEL } from '../models/program.model';
+import { I18nService } from '../i18n/i18n.service';
+import { Equipment } from '../models/exercise.model';
 import { ProgramService } from '../services/program.service';
 import { BandsSwitch } from './bands-switch';
 import { BarSwitch } from './bar-switch';
@@ -12,7 +12,7 @@ import { ProgressBar } from './progress-bar';
   selector: 'app-session-detail',
   imports: [RouterLink, ExerciseCard, ProgressBar, BarSwitch, BandsSwitch],
   template: `
-    <a routerLink="/" class="text-sm text-accent hover:underline">Settimana</a>
+    <a routerLink="/" class="text-sm text-accent hover:underline">{{ t().nav.week }}</a>
 
     @if (session(); as s) {
       @if (stats(); as st) {
@@ -24,31 +24,41 @@ import { ProgressBar } from './progress-bar';
 
           <dl class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
             <div>
-              <dt class="text-xs uppercase tracking-wide text-indigo-200">Esercizi</dt>
+              <dt class="text-xs uppercase tracking-wide text-indigo-200">
+                {{ t().common.exercises }}
+              </dt>
               <dd class="mt-1 text-3xl font-bold">{{ st.exercises }}</dd>
             </div>
             <div>
-              <dt class="text-xs uppercase tracking-wide text-indigo-200">Serie</dt>
+              <dt class="text-xs uppercase tracking-wide text-indigo-200">{{ t().common.sets }}</dt>
               <dd class="mt-1 text-3xl font-bold">{{ st.sets }}</dd>
             </div>
             <div>
-              <dt class="text-xs uppercase tracking-wide text-indigo-200">Durata stimata</dt>
+              <dt class="text-xs uppercase tracking-wide text-indigo-200">
+                {{ t().detail.estimatedDuration }}
+              </dt>
               <dd class="mt-1 text-3xl font-bold">{{ st.minutes }} min</dd>
             </div>
             <div>
-              <dt class="text-xs uppercase tracking-wide text-indigo-200">Livello</dt>
+              <dt class="text-xs uppercase tracking-wide text-indigo-200">
+                {{ t().common.level }}
+              </dt>
               <dd class="mt-1 text-3xl font-bold">{{ levelLabel() }}</dd>
             </div>
           </dl>
 
           <p class="mt-8 text-sm text-indigo-100">
-            Attrezzatura: {{ st.equipment.length ? st.equipment.join(', ') : 'nessuna' }}
+            {{ t().common.equipmentList(equipmentText(st.equipment)) }}
           </p>
 
           <div class="mt-4">
-            <app-progress-bar [value]="progress().done" [max]="progress().total" [onAccent]="true" />
+            <app-progress-bar
+              [value]="progress().done"
+              [max]="progress().total"
+              [onAccent]="true"
+            />
             <p class="mt-2 text-xs text-indigo-200">
-              {{ progress().done }} di {{ progress().total }} esercizi registrati questa settimana
+              {{ t().detail.loggedThisWeek(progress().done, progress().total) }}
             </p>
           </div>
         </header>
@@ -57,7 +67,7 @@ import { ProgressBar } from './progress-bar';
       <div class="mt-6">
         <nav
           class="sticky top-0 z-10 -mx-4 mb-6 flex gap-2 overflow-x-auto border-b border-line bg-surface p-4 lg:hidden"
-          aria-label="Esercizi"
+          [attr.aria-label]="t().common.exercises"
         >
           @for (item of items(); track item.exercise.id; let i = $index) {
             <button
@@ -78,7 +88,9 @@ import { ProgressBar } from './progress-bar';
         <div class="grid gap-6 lg:grid-cols-[14rem_1fr]">
           <aside class="hidden lg:sticky lg:top-24 lg:block lg:self-start">
             <nav class="overflow-hidden rounded border border-line bg-surface">
-              <p class="p-4 text-xs font-medium uppercase tracking-widest text-muted">Esercizi</p>
+              <p class="p-4 text-xs font-medium uppercase tracking-widest text-muted">
+                {{ t().common.exercises }}
+              </p>
               @for (item of items(); track item.exercise.id; let i = $index) {
                 <button
                   type="button"
@@ -88,7 +100,7 @@ import { ProgressBar } from './progress-bar';
                   <span class="w-4 font-bold tabular-nums text-accent">{{ i + 1 }}</span>
                   <span class="flex-1">{{ item.variant.name }}</span>
                   @if (isDone(item.exercise.id)) {
-                    <span class="text-xs font-bold text-accent">Fatto</span>
+                    <span class="text-xs font-bold text-accent">{{ t().common.done }}</span>
                   }
                 </button>
               }
@@ -98,34 +110,28 @@ import { ProgressBar } from './progress-bar';
           <div class="flex flex-col gap-6">
             @if (inGym()) {
               <section class="rounded border border-line bg-surface p-4">
-                <h2 class="text-sm font-bold">Attrezzatura</h2>
+                <h2 class="text-sm font-bold">{{ t().common.equipment }}</h2>
                 <p class="mt-1 text-sm text-muted">
-                  Rack con Smith e sbarra, bilanciere, manubri, panca regolabile, cavo regolabile,
-                  pectoral / reverse fly, leg extension / leg curl, chest press.
+                  {{ t().detail.gymEquipment }}
                   @if (hasBarItems()) {
-                    Se la sbarra è occupata, usa il pulsante nella card per passare al cavo.
+                    {{ t().detail.gymBarTaken }}
                   }
                 </p>
               </section>
             } @else {
-            <section class="rounded border border-line bg-surface p-4">
-              <h2 class="text-sm font-bold">Attrezzatura</h2>
-              @if (hasBarItems()) {
-                <p class="mt-1 text-sm text-muted">
-                  Ogni esercizio alla sbarra ha un’alternativa senza sbarra. Cambia tutta la seduta qui,
-                  oppure un esercizio alla volta dal pulsante nella card.
-                </p>
-                <app-bar-switch class="mt-4 block" />
-              }
-              <p class="mt-4 text-sm text-muted">
-                Con gli elastici la seduta aggiunge esercizi per spalle, braccia e gambe e usa alternative più efficaci.
-              </p>
-              <app-bands-switch class="mt-4 block" />
-            </section>
+              <section class="rounded border border-line bg-surface p-4">
+                <h2 class="text-sm font-bold">{{ t().common.equipment }}</h2>
+                @if (hasBarItems()) {
+                  <p class="mt-1 text-sm text-muted">{{ t().detail.homeBar }}</p>
+                  <app-bar-switch class="mt-4 block" />
+                }
+                <p class="mt-4 text-sm text-muted">{{ t().detail.homeBands }}</p>
+                <app-bands-switch class="mt-4 block" />
+              </section>
             }
 
             <details class="rounded border border-line bg-surface p-4" open>
-              <summary class="cursor-pointer text-sm font-bold">Riscaldamento · 8 min</summary>
+              <summary class="cursor-pointer text-sm font-bold">{{ t().detail.warmup }}</summary>
               <ul class="mt-4 list-disc pl-4 text-sm text-body">
                 @for (step of warmup(); track step) {
                   <li class="mb-1">{{ step }}</li>
@@ -144,7 +150,7 @@ import { ProgressBar } from './progress-bar';
         </div>
       </div>
     } @else {
-      <p class="mt-4 text-sm text-muted">Seduta non trovata.</p>
+      <p class="mt-4 text-sm text-muted">{{ t().detail.notFound }}</p>
     }
   `,
 })
@@ -153,18 +159,27 @@ export class SessionDetail {
 
   readonly id = input.required<string>();
 
+  protected readonly t = inject(I18nService).t;
+
   protected readonly warmup = computed(() => this.service.programFor(this.id()).warmup);
   protected readonly inGym = computed(() => this.id().startsWith('pal-'));
   protected readonly session = computed(() => this.service.session(this.id()));
   protected readonly items = computed(() => this.service.items(this.id()));
   protected readonly stats = computed(() => this.service.stats(this.id()));
-  protected readonly hasBarItems = computed(() => this.items().some((i) => i.swapLabel !== undefined));
+  protected readonly hasBarItems = computed(() =>
+    this.items().some((i) => i.swapLabel !== undefined),
+  );
   protected readonly progress = computed(() => this.service.progress(this.id()));
-  protected readonly levelLabel = computed(() => LEVEL_LABEL[this.service.level()]);
+  protected readonly levelLabel = computed(() => this.t().levels[this.service.level()]);
   protected readonly dayLabel = computed(() => {
     const s = this.session();
-    return s ? WEEKDAY_LABEL[s.day] : '';
+    return s ? this.t().weekdays[s.day] : '';
   });
+
+  protected equipmentText(equipment: Equipment[]): string {
+    const t = this.t();
+    return equipment.length ? equipment.map((e) => t.equipment[e]).join(', ') : t.common.none;
+  }
 
   protected isDone(exerciseId: string): boolean {
     return this.service.isLoggedToday(this.id(), exerciseId);

@@ -1,4 +1,5 @@
-import { Component, effect, input, linkedSignal } from '@angular/core';
+import { Component, effect, inject, input, linkedSignal } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
 
 @Component({
   selector: 'app-exercise-media',
@@ -15,7 +16,7 @@ import { Component, effect, input, linkedSignal } from '@angular/core';
       <div
         class="flex aspect-4/3 w-full items-center justify-center border-b border-dashed border-line-strong bg-subtle p-4 text-center text-xs text-muted"
       >
-        [Media mancante: public/{{ frames()[0] }}]
+        [{{ t().media.missing }}: public/{{ frames()[0] }}]
       </div>
     }
   `,
@@ -23,6 +24,8 @@ import { Component, effect, input, linkedSignal } from '@angular/core';
 export class ExerciseMedia {
   readonly frames = input.required<string[]>();
   readonly alt = input.required<string>();
+
+  protected readonly t = inject(I18nService).t;
 
   protected readonly index = linkedSignal(() => {
     this.frames();

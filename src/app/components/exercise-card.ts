@@ -1,5 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
-import { Level } from '../models/exercise.model';
+import { I18nService } from '../i18n/i18n.service';
+import { LEVELS, Level } from '../models/exercise.model';
 import { ProgramService, ResolvedItem } from '../services/program.service';
 import { ExerciseMedia } from './exercise-media';
 import { RestTimer } from './rest-timer';
@@ -17,7 +18,7 @@ import { SetTracker } from './set-tracker';
         </span>
         @if (doneToday()) {
           <span class="absolute right-0 top-0 bg-surface px-3 py-2 text-xs font-bold text-accent">
-            Fatto oggi
+            {{ t().card.doneToday }}
           </span>
         }
       </div>
@@ -26,7 +27,7 @@ import { SetTracker } from './set-tracker';
         <header>
           @if (item().isAlternative) {
             <p class="mb-2 text-xs font-bold text-accent">
-              Alternativa {{ inGym() ? 'alla sbarra' : 'senza sbarra' }} · al posto di {{ item().replaces }}
+              {{ t().card.alternative(inGym(), item().replaces ?? '') }}
             </p>
           }
           <p class="text-xs uppercase tracking-wide text-muted">{{ item().exercise.name }}</p>
@@ -50,9 +51,13 @@ import { SetTracker } from './set-tracker';
         }
 
         <div class="flex items-center gap-3">
-          <span class="text-xs uppercase tracking-wide text-muted">Livello</span>
-          <div class="flex flex-1 overflow-hidden rounded border border-line-strong" role="radiogroup" aria-label="Livello esercizio">
-            @for (opt of levelOptions; track opt.label) {
+          <span class="text-xs uppercase tracking-wide text-muted">{{ t().card.level }}</span>
+          <div
+            class="flex flex-1 overflow-hidden rounded border border-line-strong"
+            role="radiogroup"
+            [attr.aria-label]="t().card.levelAria"
+          >
+            @for (opt of levelOptions(); track opt.value) {
               <button
                 type="button"
                 role="radio"
@@ -69,19 +74,19 @@ import { SetTracker } from './set-tracker';
 
         <dl class="grid grid-cols-3 gap-4 border-y border-line py-4">
           <div>
-            <dt class="text-xs uppercase tracking-wide text-muted">Serie</dt>
+            <dt class="text-xs uppercase tracking-wide text-muted">{{ t().card.sets }}</dt>
             <dd class="mt-1 text-2xl font-bold">{{ item().prescription.sets }}</dd>
           </div>
           <div>
             <dt class="text-xs uppercase tracking-wide text-muted">
-              {{ item().prescription.target.kind === 'reps' ? 'Rip.' : 'Secondi' }}
+              {{ item().prescription.target.kind === 'reps' ? t().card.reps : t().card.seconds }}
             </dt>
             <dd class="mt-1 text-2xl font-bold">
               {{ item().prescription.target.min }}–{{ item().prescription.target.max }}
             </dd>
           </div>
           <div>
-            <dt class="text-xs uppercase tracking-wide text-muted">Recupero</dt>
+            <dt class="text-xs uppercase tracking-wide text-muted">{{ t().card.rest }}</dt>
             <dd class="mt-1 text-2xl font-bold">{{ item().prescription.restSeconds }}"</dd>
           </div>
         </dl>
@@ -101,7 +106,7 @@ import { SetTracker } from './set-tracker';
           <app-rest-timer [seconds]="item().prescription.restSeconds" />
           @if (last(); as l) {
             <p class="text-xs text-muted">
-              Ultimo salvataggio ({{ l.date }}): {{ l.setsCompleted.join(', ') }}
+              {{ t().card.lastSaved(l.date, l.setsCompleted.join(', ')) }}
             </p>
           }
         </div>
@@ -117,9 +122,12 @@ export class ExerciseCard {
   readonly index = input.required<number>();
 
   protected readonly inGym = computed(() => this.service.place() === 'palestra');
+  protected readonly t = inject(I18nService).t;
   protected readonly tags = computed(() => [
-    ...this.item().exercise.muscles,
-    ...this.item().exercise.equipment.filter((e) => e !== 'nessuno'),
+    ...this.item().exercise.muscles.map((m) => this.t().muscles[m]),
+    ...this.item()
+      .exercise.equipment.filter((e) => e !== 'nessuno')
+      .map((e) => this.t().equipment[e]),
   ]);
   protected readonly doneToday = computed(() =>
     this.service.isLoggedToday(this.sessionId(), this.item().exercise.id),
@@ -128,12 +136,10 @@ export class ExerciseCard {
     this.service.lastLog(this.sessionId(), this.item().exercise.id, this.item().level),
   );
 
-  protected readonly levelOptions: { value: Level | null; label: string }[] = [
-    { value: null, label: 'Auto' },
-    { value: 'base', label: 'Base' },
-    { value: 'intermedio', label: 'Interm.' },
-    { value: 'avanzato', label: 'Avanz.' },
-  ];
+  protected readonly levelOptions = computed<{ value: Level | null; label: string }[]>(() => [
+    { value: null, label: this.t().levelAuto },
+    ...LEVELS.map((l) => ({ value: l, label: this.t().levelsShort[l] })),
+  ]);
   protected readonly activeClass = 'bg-indigo-600 text-white';
   protected readonly inactiveClass = 'bg-surface text-body hover:bg-subtle';
 

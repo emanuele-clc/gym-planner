@@ -1,23 +1,34 @@
-import { Component, DestroyRef, computed, inject, input, linkedSignal, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  computed,
+  inject,
+  input,
+  linkedSignal,
+  signal,
+} from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
 
 @Component({
   selector: 'app-rest-timer',
   template: `
     <div class="flex items-center gap-4 text-sm">
-      <span class="text-muted">Riposo</span>
+      <span class="text-muted">{{ t().timer.rest }}</span>
       <span class="w-12 font-medium tabular-nums">{{ label() }}</span>
       <button
         type="button"
         class="h-11 border border-line-strong bg-surface px-4 text-body hover:bg-subtle"
         (click)="toggle()"
       >
-        {{ running() ? 'Stop' : 'Avvia' }}
+        {{ running() ? t().timer.stop : t().timer.start }}
       </button>
     </div>
   `,
 })
 export class RestTimer {
   readonly seconds = input.required<number>();
+
+  protected readonly t = inject(I18nService).t;
 
   protected readonly remaining = linkedSignal(() => this.seconds());
   protected readonly running = signal(false);

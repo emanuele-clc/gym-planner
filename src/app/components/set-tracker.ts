@@ -1,4 +1,5 @@
-import { Component, input, linkedSignal, output } from '@angular/core';
+import { Component, inject, input, linkedSignal, output } from '@angular/core';
+import { I18nService } from '../i18n/i18n.service';
 
 @Component({
   selector: 'app-set-tracker',
@@ -6,7 +7,7 @@ import { Component, input, linkedSignal, output } from '@angular/core';
     <div class="flex flex-wrap items-end gap-2">
       @for (v of values(); track $index) {
         <label class="flex flex-col gap-1 text-xs text-muted">
-          S{{ $index + 1 }}
+          {{ t().tracker.setPrefix }}{{ $index + 1 }}
           <input
             type="number"
             inputmode="numeric"
@@ -22,7 +23,7 @@ import { Component, input, linkedSignal, output } from '@angular/core';
         class="h-11 bg-indigo-600 px-4 text-sm text-white hover:bg-indigo-700"
         (click)="save()"
       >
-        {{ isSaved() ? 'Salvato' : 'Salva' }}
+        {{ isSaved() ? t().tracker.saved : t().tracker.save }}
       </button>
     </div>
   `,
@@ -30,6 +31,8 @@ import { Component, input, linkedSignal, output } from '@angular/core';
 export class SetTracker {
   readonly sets = input.required<number>();
   readonly saved = output<number[]>();
+
+  protected readonly t = inject(I18nService).t;
 
   protected readonly values = linkedSignal<(number | null)[]>(() =>
     Array.from({ length: this.sets() }, () => null),

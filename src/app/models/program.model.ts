@@ -4,19 +4,8 @@ export const WEEKDAYS = ['lun', 'mar', 'mer', 'gio', 'ven', 'sab', 'dom'] as con
 
 export type Weekday = (typeof WEEKDAYS)[number];
 
-export const WEEKDAY_LABEL: Record<Weekday, string> = {
-  lun: 'Lunedì',
-  mar: 'Martedì',
-  mer: 'Mercoledì',
-  gio: 'Giovedì',
-  ven: 'Venerdì',
-  sab: 'Sabato',
-  dom: 'Domenica',
-};
-
 export type Target =
-  | { kind: 'reps'; min: number; max: number }
-  | { kind: 'seconds'; min: number; max: number };
+  { kind: 'reps'; min: number; max: number } | { kind: 'seconds'; min: number; max: number };
 
 export interface Prescription {
   sets: number;

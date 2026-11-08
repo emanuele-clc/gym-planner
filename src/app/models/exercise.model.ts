@@ -2,12 +2,6 @@ export const LEVELS = ['base', 'intermedio', 'avanzato'] as const;
 
 export type Level = (typeof LEVELS)[number];
 
-export const LEVEL_LABEL: Record<Level, string> = {
-  base: 'Base',
-  intermedio: 'Intermedio',
-  avanzato: 'Avanzato',
-};
-
 export type Equipment =
   | 'nessuno'
   | 'sbarra'

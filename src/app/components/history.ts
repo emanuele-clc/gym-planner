@@ -1,6 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LEVEL_LABEL } from '../models/exercise.model';
+import { I18nService } from '../i18n/i18n.service';
 import { ProgramService } from '../services/program.service';
 
 interface HistoryRow {
@@ -16,9 +16,9 @@ interface HistoryGroup {
   rows: HistoryRow[];
 }
 
-const formatDate = (iso: string): string => {
+const formatDate = (iso: string, locale: string): string => {
   const [y, m, d] = iso.split('-').map(Number);
-  return new Date(y, m - 1, d).toLocaleDateString('it-IT', {
+  return new Date(y, m - 1, d).toLocaleDateString(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -31,14 +31,14 @@ const formatDate = (iso: string): string => {
   imports: [RouterLink],
   template: `
     <div class="flex flex-wrap items-center justify-between gap-4">
-      <h1 class="text-3xl font-bold tracking-tight">Storico</h1>
+      <h1 class="text-3xl font-bold tracking-tight">{{ t().history.title }}</h1>
       @if (groups().length) {
         <button
           type="button"
           class="border border-line-strong bg-surface px-4 py-2 text-sm text-body hover:bg-subtle"
           (click)="clear()"
         >
-          Cancella storico
+          {{ t().history.clear }}
         </button>
       }
     </div>
@@ -63,10 +63,10 @@ const formatDate = (iso: string): string => {
               <table class="w-full text-left text-sm">
                 <thead class="text-xs uppercase text-muted">
                   <tr>
-                    <th class="p-4 font-normal">Esercizio</th>
-                    <th class="p-4 font-normal">Seduta</th>
-                    <th class="p-4 font-normal">Livello</th>
-                    <th class="p-4 font-normal">Serie</th>
+                    <th class="p-4 font-normal">{{ t().history.colExercise }}</th>
+                    <th class="p-4 font-normal">{{ t().history.colSession }}</th>
+                    <th class="p-4 font-normal">{{ t().history.colLevel }}</th>
+                    <th class="p-4 font-normal">{{ t().history.colSets }}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -86,9 +86,9 @@ const formatDate = (iso: string): string => {
       </div>
     } @else {
       <div class="mt-6 rounded border border-line bg-surface p-6 text-sm text-muted">
-        <p>Nessuna serie registrata.</p>
+        <p>{{ t().history.empty }}</p>
         <a routerLink="/" class="mt-4 inline-block text-accent hover:underline">
-          Vai alla settimana
+          {{ t().history.goToWeek }}
         </a>
       </div>
     }
@@ -97,30 +97,33 @@ const formatDate = (iso: string): string => {
 export class History {
   private readonly service = inject(ProgramService);
 
+  protected readonly t = inject(I18nService).t;
+
   protected readonly groups = computed<HistoryGroup[]>(() => {
+    const t = this.t();
     const byDate = new Map<string, HistoryRow[]>();
     for (const log of this.service.logs()) {
       const rows = byDate.get(log.date) ?? [];
       rows.push({
         exercise: this.service.exercise(log.exerciseId)?.variants[log.level].name ?? log.exerciseId,
         session: this.service.session(log.sessionId)?.title ?? log.sessionId,
-        level: LEVEL_LABEL[log.level],
+        level: t.levels[log.level],
         sets: log.setsCompleted.join(' · '),
       });
       byDate.set(log.date, rows);
     }
     return [...byDate.entries()]
       .sort(([a], [b]) => b.localeCompare(a))
-      .map(([date, rows]) => ({ date, label: formatDate(date), rows }));
+      .map(([date, rows]) => ({ date, label: formatDate(date, t.locale), rows }));
   });
 
   protected readonly summary = computed(() => [
-    { label: 'Giorni registrati', value: this.groups().length },
-    { label: 'Esercizi registrati', value: this.service.logs().length },
-    { label: 'Serie registrate', value: this.service.loggedSets() },
+    { label: this.t().history.days, value: this.groups().length },
+    { label: this.t().history.exercises, value: this.service.logs().length },
+    { label: this.t().history.sets, value: this.service.loggedSets() },
   ]);
 
   protected clear(): void {
-    if (confirm('Cancellare tutto lo storico?')) this.service.clearLogs();
+    if (confirm(this.t().history.confirmClear)) this.service.clearLogs();
   }
 }

@@ -1,11 +1,16 @@
 import { Component, inject } from '@angular/core';
-import { LEVELS, LEVEL_LABEL } from '../models/exercise.model';
+import { I18nService } from '../i18n/i18n.service';
+import { LEVELS } from '../models/exercise.model';
 import { ProgramService } from '../services/program.service';
 
 @Component({
   selector: 'app-level-switch',
   template: `
-    <div class="flex w-full border border-line-strong sm:inline-flex sm:w-auto" role="radiogroup" aria-label="Livello">
+    <div
+      class="flex w-full border border-line-strong sm:inline-flex sm:w-auto"
+      role="radiogroup"
+      [attr.aria-label]="t().switches.levelAria"
+    >
       @for (l of levels; track l) {
         <button
           type="button"
@@ -15,7 +20,7 @@ import { ProgramService } from '../services/program.service';
           [class]="l === service.level() ? active : inactive"
           (click)="service.setLevel(l)"
         >
-          {{ labels[l] }}
+          {{ t().levels[l] }}
         </button>
       }
     </div>
@@ -24,7 +29,7 @@ import { ProgramService } from '../services/program.service';
 export class LevelSwitch {
   protected readonly service = inject(ProgramService);
   protected readonly levels = LEVELS;
-  protected readonly labels = LEVEL_LABEL;
+  protected readonly t = inject(I18nService).t;
   protected readonly active = 'bg-indigo-600 text-white';
   protected readonly inactive = 'bg-surface text-body hover:bg-subtle';
 }

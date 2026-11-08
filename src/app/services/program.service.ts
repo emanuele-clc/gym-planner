@@ -1,9 +1,19 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { EXERCISES } from '../data/exercises.data';
 import { GYM_EXERCISES } from '../data/gym-exercises.data';
 import { GYM_PROGRAM } from '../data/gym-program.data';
 import { PROGRAM } from '../data/program.data';
-import { Equipment, Exercise, LEVELS, Level, MUSCLES, MuscleGroup, Variant } from '../models/exercise.model';
+import { EXERCISES_EN, SESSION_TITLES_EN, WARMUP_EN } from '../i18n/exercises.en';
+import { I18nService } from '../i18n/i18n.service';
+import {
+  Equipment,
+  Exercise,
+  LEVELS,
+  Level,
+  MUSCLES,
+  MuscleGroup,
+  Variant,
+} from '../models/exercise.model';
 import {
   ExerciseLog,
   Prescription,
@@ -19,6 +29,38 @@ export type BarMode = 'con' | 'senza';
 export type Place = 'palestra' | 'casa';
 
 const PROGRAMS: Record<Place, Program> = { palestra: GYM_PROGRAM, casa: PROGRAM };
+
+const ALL_EXERCISES: Exercise[] = [...EXERCISES, ...GYM_EXERCISES];
+
+const toEnglish = (exercise: Exercise): Exercise => {
+  const tr = EXERCISES_EN[exercise.id];
+  if (!tr) return exercise;
+  const variants = Object.fromEntries(
+    LEVELS.map((l) => {
+      const [name, note] = tr.variants[l];
+      return [l, { ...exercise.variants[l], name, note }];
+    }),
+  ) as Record<Level, Variant>;
+  return { ...exercise, name: tr.name, cues: tr.cues, variants };
+};
+
+const programToEnglish = (place: Place): Program => ({
+  warmup: WARMUP_EN[place],
+  sessions: PROGRAMS[place].sessions.map((s) => ({
+    ...s,
+    title: SESSION_TITLES_EN[s.id] ?? s.title,
+  })),
+});
+
+const ENGLISH_PROGRAMS: Record<Place, Program> = {
+  palestra: programToEnglish('palestra'),
+  casa: programToEnglish('casa'),
+};
+
+const BY_LANG = {
+  it: new Map(ALL_EXERCISES.map((e) => [e.id, e])),
+  en: new Map(ALL_EXERCISES.map((e) => [e.id, toEnglish(e)])),
+};
 
 export interface ResolvedItem {
   exercise: Exercise;
@@ -113,8 +155,8 @@ const readOverrides = (): Record<string, Level> => {
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) return {};
     return Object.fromEntries(
-      Object.entries(parsed as Record<string, unknown>).filter(
-        (entry): entry is [string, Level] => isLevel(entry[1]),
+      Object.entries(parsed as Record<string, unknown>).filter((entry): entry is [string, Level] =>
+        isLevel(entry[1]),
       ),
     );
   } catch {
@@ -144,10 +186,14 @@ const readSwaps = (): Record<string, boolean> => {
 
 @Injectable({ providedIn: 'root' })
 export class ProgramService {
-  private readonly exercisesById = new Map([...EXERCISES, ...GYM_EXERCISES].map((e) => [e.id, e]));
+  private readonly i18n = inject(I18nService);
+  private readonly exercisesById = computed(() => BY_LANG[this.i18n.lang()]);
+  private readonly programs = computed(() =>
+    this.i18n.lang() === 'en' ? ENGLISH_PROGRAMS : PROGRAMS,
+  );
 
   readonly place = signal<Place>(readPlace());
-  readonly program = computed<Program>(() => PROGRAMS[this.place()]);
+  readonly program = computed<Program>(() => this.programs()[this.place()]);
   readonly level = signal<Level>(readLevel());
   readonly barMode = signal<BarMode>(readBarMode());
   readonly overrides = signal<Record<string, Level>>(readOverrides());
@@ -167,13 +213,16 @@ export class ProgramService {
 
   /** Cerca in entrambi i piani, così i link e lo storico restano validi dopo il cambio. */
   session(id: string): Session | undefined {
-    return Object.values(PROGRAMS)
+    return Object.values(this.programs())
       .flatMap((p) => p.sessions)
       .find((s) => s.id === id);
   }
 
   programFor(sessionId: string): Program {
-    return Object.values(PROGRAMS).find((p) => p.sessions.some((s) => s.id === sessionId)) ?? this.program();
+    return (
+      Object.values(this.programs()).find((p) => p.sessions.some((s) => s.id === sessionId)) ??
+      this.program()
+    );
   }
 
   setPlace(place: Place): void {
@@ -181,7 +230,7 @@ export class ProgramService {
   }
 
   exercise(id: string): Exercise | undefined {
-    return this.exercisesById.get(id);
+    return this.exercisesById().get(id);
   }
 
   items(sessionId: string): ResolvedItem[] {
@@ -330,14 +379,15 @@ export class ProgramService {
     const swaps = this.swaps();
     const overrides = this.overrides();
     const globalLevel = this.level();
-    const original = this.exercisesById.get(item.exerciseId);
+    const t = this.i18n.t().swap;
+    const original = this.exercisesById().get(item.exerciseId);
     if (!original) return [];
     const candidate = this.bands() ? (item.bandAlternative ?? item.alternative) : item.alternative;
     const swappable = original.equipment.includes('sbarra') ? candidate : undefined;
     const alt = swappable && (swaps[original.id] ?? noBar) ? swappable : undefined;
-    const exercise = alt ? this.exercisesById.get(alt.exerciseId) : original;
+    const exercise = alt ? this.exercisesById().get(alt.exerciseId) : original;
     if (!exercise) return [];
-    const altExercise = swappable ? this.exercisesById.get(swappable.exerciseId) : undefined;
+    const altExercise = swappable ? this.exercisesById().get(swappable.exerciseId) : undefined;
     const prescriptions = alt ? alt.prescription : item.prescription;
     const level = overrides[exercise.id] ?? globalLevel;
     return [
@@ -350,9 +400,9 @@ export class ProgramService {
         replaces: alt ? original.name : undefined,
         originalId: original.id,
         swapLabel: alt
-          ? `Torna a ${original.name}`
+          ? t.backTo(original.name)
           : altExercise
-            ? `${this.place() === 'palestra' ? 'Sbarra occupata' : 'Senza sbarra'}: ${altExercise.name}`
+            ? (this.place() === 'palestra' ? t.barTaken : t.noBar)(altExercise.name)
             : undefined,
       },
     ];
